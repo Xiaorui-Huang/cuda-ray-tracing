@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "label": "build-current-file",
+            "type": "shell",
+            "command": "nvcc ${file} -o ${fileBasenameNoExt} -g",
+            "problemMatcher": ["$nvcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
