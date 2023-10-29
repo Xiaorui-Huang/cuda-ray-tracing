@@ -1,6 +1,7 @@
 #include <cuda_runtime.h>
 #include <iostream>
 
+// expanded upon https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/#:~:text=A%20group%20of%20threads%20is,%2C%20or%20CUDA%20dynamic%20parallelism).
 #define N 256 // example matrix size
 
 // Kernel to add two matrices

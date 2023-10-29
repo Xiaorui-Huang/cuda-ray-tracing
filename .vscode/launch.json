@@ -5,16 +5,49 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "CUDA C++: Launch Current File",
+            "name": "(cuda-gdb) Launch",
             "type": "cuda-gdb",
             "request": "launch",
-            "program": "${workspaceFolder}/${fileBasenameNoExt}"
+            "program": "${workspaceFolder}/build/raytracing",
+            "cwd": "${workspaceFolder}/build",
+            "preLaunchTask": "build",
+        },
+        {
+            "name": "(cuda-gdb) Launch release",
+            "type": "cuda-gdb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build_release/raytracing",
+            "cwd": "${workspaceFolder}/build_release",
+            "preLaunchTask": "build release",
+        },
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/raytracing",
+            "cwd": "${workspaceFolder}/build",
+            "stopAtEntry": false,
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set disassembly-flavor intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                },
+            ],
+            "preLaunchTask": "build"
         },
         {
             "name": "CUDA C++: Attach",
             "type": "cuda-gdb",
             "request": "attach"
-        }
-        ,
+        },
     ]
 }
