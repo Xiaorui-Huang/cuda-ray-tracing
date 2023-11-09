@@ -14,9 +14,14 @@ class Vec3d {
 
     __host__ __device__ Vec3d(double x, double y, double z) : data{x, y, z} {}
 
-    __host__ __device__ inline double x() const { return data[0]; }
-    __host__ __device__ inline double y() const { return data[1]; }
-    __host__ __device__ inline double z() const { return data[2]; }
+    __host__ __device__ inline double &x() { return data[0]; }
+    __host__ __device__ inline const double &x() const { return data[0]; }
+
+    __host__ __device__ inline double &y() { return data[1]; }
+    __host__ __device__ inline const double &y() const { return data[1]; }
+
+    __host__ __device__ inline double &z() { return data[2]; }
+    __host__ __device__ inline const double &z() const { return data[2]; }
 
     __host__ __device__ inline double &operator[](size_t index) { return data[index]; }
 

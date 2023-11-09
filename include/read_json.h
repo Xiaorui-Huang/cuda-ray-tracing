@@ -25,6 +25,7 @@ inline bool read_json(const std::string &filename,
                       std::vector<std::shared_ptr<Light>> &lights);
 
 // Implementation
+#include "Vec3d.cuh"
 
 // #include "DirectionalLight.h"
 // #include "Light.h"
@@ -35,8 +36,6 @@ inline bool read_json(const std::string &filename,
 #include "Plane.cuh"
 #include "Sphere.cuh"
 #include "Triangle.cuh"
-#include "TriangleSoup.cuh"
-#include "Vec3d.cuh"
 
 #include "dirname.h"
 #include "readSTL.h"
@@ -50,8 +49,9 @@ using json = nlohmann::json;
 
 inline bool read_json(const std::string &filename,
                       Camera &camera,
-                      std::vector<Object> &objects){
-                    //   std::vector<std::shared_ptr<Light>> &lights) {
+                      std::vector<Object> &objects,
+                      std::vector<Material> &materials) {
+    //   std::vector<std::shared_ptr<Light>> &lights) {
     // Heavily borrowing from
     // https://github.com/yig/graphics101-raycasting/blob/master/parser.cpp
     using json = nlohmann::json;
@@ -62,39 +62,34 @@ inline bool read_json(const std::string &filename,
     json j;
     infile >> j;
 
+    auto parseVector3d = [](const json &j) -> Vec3d { return Vec3d(j[0], j[1], j[2]); };
+    assert(j["type"] == "perspective" && "Only handling perspective cameras");
     // parse a vector
-    auto parse_Vector3d = [](const json &j) -> Vec3d { return Vec3d(j[0], j[1], j[2]); };
-    // parse camera
-    auto parse_camera = [&parse_Vector3d](const json &j, Camera &camera) {
-        assert(j["type"] == "perspective" && "Only handling perspective cameras");
-        camera.d = j["focal_length"].get<double>();
-        camera.e = parse_Vector3d(j["eye"]);
-        camera.v = parse_Vector3d(j["up"]).normalized();
-        camera.w = -parse_Vector3d(j["look"]).normalized();
-        camera.u = camera.v.cross(camera.w);
-        camera.height = j["height"].get<double>();
+    auto parseCamera = [&parseVector3d](const json &j, Camera &camera) {
+        camera.e = parseVector3d(j["eye"]);
+        camera.v = parseVector3d(j["up"]).normalized();
+        camera.w = -parseVector3d(j["look"]).normalized();
         camera.width = j["width"].get<double>();
     };
-    parse_camera(j["camera"], camera);
+    parseCamera(j["camera"], camera);
 
-    // Parse materials
-    std::unordered_map<std::string, std::shared_ptr<Material>> materials;
-    auto parse_materials =
-        [&parse_Vector3d](const json &j,
-                          std::unordered_map<std::string, std::shared_ptr<Material>> &materials) {
-            materials.clear();
+    std::unordered_map<std::string, std::shared_ptr<Material>> materialsMap;
+    auto parseMaterialsMap =
+        [&parseVector3d](const json &j,
+                         std::unordered_map<std::string, std::shared_ptr<Material>> &materialsMap) {
+            materialsMap.clear();
             for (const json &jmat : j) {
                 std::string name = jmat["name"];
                 std::shared_ptr<Material> material(new Material());
-                material->ka = parse_Vector3d(jmat["ka"]);
-                material->kd = parse_Vector3d(jmat["kd"]);
-                material->ks = parse_Vector3d(jmat["ks"]);
-                material->km = parse_Vector3d(jmat["km"]);
+                material->ka = parseVector3d(jmat["ka"]);
+                material->kd = parseVector3d(jmat["kd"]);
+                material->ks = parseVector3d(jmat["ks"]);
+                material->km = parseVector3d(jmat["km"]);
                 material->phong_exponent = jmat["phong_exponent"];
-                materials[name] = material;
+                materialsMap[name] = material;
             }
         };
-    parse_materials(j["materials"], materials);
+    parseMaterialsMap(j["materials"], materialsMap);
 
     // auto parse_lights = [&parse_Vector3d](const json &j, std::vector<std::shared_ptr<Light>>
     // &lights) {
@@ -115,27 +110,30 @@ inline bool read_json(const std::string &filename,
     // };
     // parse_lights(j["lights"], lights);
 
-    auto parse_objects = [&parse_Vector3d, &filename, &materials](
-                             const json &j, std::vector<Object> &objects) {
+    auto parseObjects = [&parseVector3d, &filename, &materialsMap,
+                         &materials](const json &j, std::vector<Object> &objects) {
         objects.clear();
         for (const json &jobj : j) {
+            if (jobj.count("material")) {
+                if (materialsMap.count(jobj["material"])) {
+                    materials.push_back(*materialsMap[jobj["material"]]);
+                }
+            }
             if (jobj["type"] == "sphere") {
-
-                std::shared_ptr<Sphere> sphere(new Sphere());
-                sphere->center = parse_Vector3d(jobj["center"]);
-                sphere->radius = jobj["radius"].get<double>();
-                objects.push_back(sphere);
+                Sphere sphere;
+                sphere.center = parseVector3d(jobj["center"]);
+                sphere.radius = jobj["radius"].get<double>();
+                objects.push_back(Object(sphere));
             } else if (jobj["type"] == "plane") {
-                std::shared_ptr<Plane> plane(new Plane());
-                plane->point = parse_Vector3d(jobj["point"]);
-                plane->normal = parse_Vector3d(jobj["normal"]).normalized();
-                objects.push_back(plane);
+                Plane plane;
+                plane.point = parseVector3d(jobj["point"]);
+                plane.normal = parseVector3d(jobj["normal"]).normalized();
+                objects.push_back(Object(plane));
             } else if (jobj["type"] == "triangle") {
-                std::shared_ptr<Triangle> tri(new Triangle());
-                tri->corners = std::make_tuple(parse_Vector3d(jobj["corners"][0]),
-                                               parse_Vector3d(jobj["corners"][1]),
-                                               parse_Vector3d(jobj["corners"][2]));
-                objects.push_back(tri);
+                Triangle tri =
+                    Triangle(parseVector3d(jobj["corners"][0]), parseVector3d(jobj["corners"][1]),
+                             parseVector3d(jobj["corners"][2]));
+                objects.push_back(Object(tri));
             } else if (jobj["type"] == "soup") {
                 std::vector<std::vector<double>> V;
                 std::vector<std::vector<double>> F;
@@ -149,28 +147,22 @@ inline bool read_json(const std::string &filename,
                     const std::string stl_path = jobj["stl"];
                     igl::readSTL(igl::dirname(filename) + PATH_SEPARATOR + stl_path, V, F, N);
                 }
-                std::shared_ptr<TriangleSoup> soup(new TriangleSoup());
+                // std::shared_ptr<TriangleSoup> soup(new TriangleSoup());
                 for (int f = 0; f < F.size(); f++) {
-                    std::shared_ptr<Triangle> tri(new Triangle());
-                    tri->corners =
-                        std::make_tuple(Vec3d(V[F[f][0]][0], V[F[f][0]][1], V[F[f][0]][2]),
-                                        Vec3d(V[F[f][1]][0], V[F[f][1]][1], V[F[f][1]][2]),
-                                        Vec3d(V[F[f][2]][0], V[F[f][2]][1], V[F[f][2]][2]));
-                    soup->triangles.push_back(tri);
-                }
-                objects.push_back(soup);
-            }
-            // objects.back()->material = default_material;
-            if (jobj.count("material")) {
-                if (materials.count(jobj["material"])) {
-                    objects.back()->material = materials[jobj["material"]];
+                    Triangle tri = Triangle(Vec3d(V[F[f][0]][0], V[F[f][0]][1], V[F[f][0]][2]),
+                                            Vec3d(V[F[f][1]][0], V[F[f][1]][1], V[F[f][1]][2]),
+                                            Vec3d(V[F[f][2]][0], V[F[f][2]][1], V[F[f][2]][2]));
+                    // assigne material index
+                    objects.push_back(Object(tri));
+                    objects.back().materialIndex = materials.size() - 1;
                 }
             }
+
+            objects.back().materialIndex = materials.size() - 1;
         }
     };
-    parse_objects(j["objects"], objects);
-
+    parseObjects(j["objects"], objects);
     return true;
-}
+};
 
 #endif

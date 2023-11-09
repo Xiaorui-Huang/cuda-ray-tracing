@@ -1,11 +1,14 @@
 #ifndef OBJECT_CUH
 #define OBJECT_CUH
 
+#include <math.h>
+
 #include "AABB.cuh"
 #include "Plane.cuh"
 #include "Sphere.cuh"
 #include "Triangle.cuh"
-#include "TriangleSoup.cuh"
+
+#define EPS 1e-4f
 
 enum class ObjectType { AABB, Plane, Sphere, Triangle, TriangleSoup };
 
@@ -14,7 +17,6 @@ union ObjectData {
     Plane plane;
     Sphere sphere;
     Triangle triangle;
-    TriangleSoup triangleSoup;
 
     // define defalt constructors, since union have non-trivial members
     __host__ __device__ ObjectData() { memset(this, 0, sizeof(ObjectData)); }
@@ -27,38 +29,49 @@ struct Object {
     AABB boundingBox;
     int materialIndex; // Unique identifier for the object
 
-    __host__ __device__ Object(AABB aabb, int index)
-        : type(ObjectType::AABB), boundingBox(aabb), materialIndex(index) {
+    __host__ __device__ Object(AABB aabb)
+        : type(ObjectType::AABB), boundingBox(aabb), materialIndex(-1) {
         data.aabb = aabb;
     }
 
-    __host__ __device__ Object(Plane plane, int index)
-        : type(ObjectType::Plane), materialIndex(index) {
+    __host__ __device__ Object(Plane plane)
+        : type(ObjectType::Plane), materialIndex(-1) {
         data.plane = plane;
-        boundingBox = AABB(-INFINITY, INFINITY);
+
+        // Small epsilon value for the bounding box thickness
+        Vec3d minBounds(-INFINITY, -INFINITY, -INFINITY);
+        Vec3d maxBounds(INFINITY, INFINITY, INFINITY);
+
+        // Check if the normal is parallel to the x-axis
+        if (fabs(plane.normal.x()) > 1.0f - EPS) {
+            minBounds.x() = plane.point.x() - EPS;
+            maxBounds.x() = plane.point.x() + EPS;
+        }
+        // Check if the normal is parallel to the y-axis
+        else if (fabs(plane.normal.y()) > 1.0f - EPS) {
+            minBounds.y() = plane.point.y() - EPS;
+            maxBounds.y() = plane.point.y() + EPS;
+        }
+        // Check if the normal is parallel to the z-axis
+        else if (fabs(plane.normal.z()) > 1.0f - EPS) {
+            minBounds.z() = plane.point.z() - EPS;
+            maxBounds.z() = plane.point.z() + EPS;
+        }
+        // Set the bounding box for the plane
+        boundingBox = AABB(minBounds, maxBounds);
     }
 
-    __host__ __device__ Object(Sphere sphere, int index)
-        : type(ObjectType::Sphere), materialIndex(index) {
+    __host__ __device__ Object(Sphere sphere)
+        : type(ObjectType::Sphere), materialIndex(-1) {
         data.sphere = sphere;
         boundingBox = AABB(sphere.center - sphere.radius, sphere.center + sphere.radius);
     }
 
-    __host__ __device__ Object(Triangle triangle, int index)
-        : type(ObjectType::Triangle), materialIndex(index) {
+    __host__ __device__ Object(Triangle triangle)
+        : type(ObjectType::Triangle), materialIndex(-1) {
         data.triangle = triangle;
-        // boundingBox = AABB(triangle.min, triangle.max);
+        boundingBox = AABB(triangle.minCorner(), triangle.maxCorner());
     }
-
-    // We use default/empty Bounding Box for TriangleSoup
-    // Box will never be hit.
-    // Instead every Triangle will be 
-    __host__ __device__ Object(TriangleSoup triangleSoup, int index)
-        : type(ObjectType::TriangleSoup), materialIndex(index), boundingBox() {
-        data.triangleSoup = triangleSoup;
-    }
-
-    __host__
 
     __device__ bool intersect(const Ray &ray, float minT, float maxT, HitInfo &hitInfo) const {
         if (!boundingBox.intersect(ray, minT, maxT, hitInfo)) {
@@ -73,8 +86,6 @@ struct Object {
             return data.sphere.intersect(ray, minT, maxT, hitInfo);
         case ObjectType::Triangle:
             return data.triangle.intersect(ray, minT, maxT, hitInfo);
-        case ObjectType::TriangleSoup:
-            return data.triangleSoup.intersect(ray, minT, maxT, hitInfo);
         default:
             return false; // Unrecognized object type
         }

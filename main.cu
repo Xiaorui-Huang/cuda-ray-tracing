@@ -5,8 +5,8 @@
 #include <memory>
 #include <vector>
 
-#include "Vec3d.cuh"
 #include "Camera.h"
+#include "Vec3d.cuh"
 // #include "Light.h"
 #include "Object.cuh"
 // #include "raycolor.h"
@@ -16,19 +16,19 @@
 
 int main(int argc, char *argv[]) {
     Camera camera;
-    std::vector<std::shared_ptr<Object>> objectsVec;
-    std::vector<std::shared_ptr<Light>> lightsVec;
+    std::vector<Object> objects;
+    std::vector<Material> materials;
+
     // Read a camera and scene description from given .json file
 
-    // read_json(argc <= 1 ? "../data/bunny.json" : argv[1], camera, objectsVec, lightsVec);
-    // read_json(argc <= 1 ? "../data/inside-a-sphere.json" : argv[1], camera, objectsVec, lightsVec);
-
-
+    read_json(argc <= 1 ? "../data/bunny.json" : argv[1], camera, objects, materials);
+    // read_json(argc <= 1 ? "../data/inside-a-sphere.json" : argv[1], camera, objectsVec,
+    // lightsVec);
 
     int width = 640;
     int height = 360;
     std::vector<unsigned char> rgb_image(3 * width * height);
-    
+
     // For each pixel (i,j)
     for (unsigned i = 0; i < height; ++i) {
         // std::cout << std::fixed << std::setprecision(2);
