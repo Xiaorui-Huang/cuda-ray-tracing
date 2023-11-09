@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.cuh": "cuda-cpp",
         "*.tcs": "glsl",
         "*.fs": "glsl",
         "*.tes": "glsl",
@@ -54,6 +55,9 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp",
-        "valarray": "cpp"
-    }
+        "valarray": "cpp",
+        "cassert": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "enabled",
+    "C_Cpp.clang_format_fallbackStyle": "LLVM"
 }

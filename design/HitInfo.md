@@ -13,10 +13,9 @@ struct HitInfo {
     float tNear;    // Distance from the ray origin to the nearest intersection
     float tFar;     // Distance from the ray origin to the farthest intersection
     Vec3 normal;    // Normal at the intersection
-    int objectId;   // Object identifier
 
     // Constructor to initialize with maximum distance (infinity) and invalid object ID
-    __device__ HitInfo() : tNear(FLT_MAX), tFar(FLT_MAX), objectId(-1) {
+    __device__ HitInfo() : tNear(FLT_MAX), tFar(FLT_MAX) {
         // Normal vector is implicitly initialized (could be zero-initialized or default-constructed depending on Vec3)
     }
 

@@ -7,11 +7,11 @@
 
 #include "Vec3d.cuh"
 #include "Camera.h"
-#include "Light.h"
-#include "Object.h"
-#include "raycolor.h"
+// #include "Light.h"
+#include "Object.cuh"
+// #include "raycolor.h"
 #include "read_json.h"
-#include "viewing_ray.h"
+// #include "viewing_ray.h"
 #include "write_ppm.h"
 
 int main(int argc, char *argv[]) {
@@ -20,21 +20,10 @@ int main(int argc, char *argv[]) {
     std::vector<std::shared_ptr<Light>> lightsVec;
     // Read a camera and scene description from given .json file
 
-    read_json(argc <= 1 ? "../data/bunny.json" : argv[1], camera, objectsVec, lightsVec);
+    // read_json(argc <= 1 ? "../data/bunny.json" : argv[1], camera, objectsVec, lightsVec);
     // read_json(argc <= 1 ? "../data/inside-a-sphere.json" : argv[1], camera, objectsVec, lightsVec);
 
-    // Allocate memory based on the size of the vectors returned by read_json
-    Object** objects  = new Object *[objectsVec.size()];
-    // Light** lights = new Light *[lightsVec.size()];
 
-    // Populate the raw pointer arrays
-    for (size_t i = 0; i < objectsVec.size(); ++i) {
-        objects[i] = objectsVec[i].get();
-    }
-
-    // for (size_t i = 0; i < lightsVec.size(); ++i) {
-    //     lights[i] = lightsVec[i].get();
-    // }
 
     int width = 640;
     int height = 360;
@@ -49,8 +38,8 @@ int main(int argc, char *argv[]) {
             Vec3d rgb(0, 0, 0);
 
             // Compute viewing ray
-            Ray ray;
-            viewing_ray(camera, i, j, width, height, ray);
+            // Ray ray;
+            // viewing_ray(camera, i, j, width, height, ray);
 
             // Shoot ray and collect color
             // raycolor(ray, 1.0, objects, lights, 0, rgb);
@@ -65,7 +54,4 @@ int main(int argc, char *argv[]) {
     std::cout << std::endl;
 
     write_ppm("rgb.ppm", rgb_image, width, height, 3);
-
-    delete[] objects;
-    // delete[] lights;
 }

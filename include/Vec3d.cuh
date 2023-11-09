@@ -1,7 +1,7 @@
 #ifndef VEC3D_CUH
 #define VEC3D_CUH
 
-#include <cmath> // For sqrt
+#include <cmath> 
 
 class Vec3d {
   private:
@@ -10,7 +10,9 @@ class Vec3d {
   public:
     __host__ __device__ Vec3d() : data{0.0, 0.0, 0.0} {}
 
-    __host__ __device__ Vec3d(double _x, double _y, double _z) : data{_x, _y, _z} {}
+    __host__ __device__ Vec3d(double x) : data{x, x, x} {}
+
+    __host__ __device__ Vec3d(double x, double y, double z) : data{x, y, z} {}
 
     __host__ __device__ inline double x() const { return data[0]; }
     __host__ __device__ inline double y() const { return data[1]; }
@@ -44,6 +46,7 @@ class Vec3d {
         return Vec3d(x() * scalar, y() * scalar, z() * scalar);
     }
 
+
     // Element-wise multiplication
     __host__ __device__ inline Vec3d operator*(const Vec3d &other) const {
         return Vec3d(x() * other.x(), y() * other.y(), z() * other.z());
@@ -72,5 +75,10 @@ class Vec3d {
 
     __host__ __device__ inline void normalize() { (*this) = (*this) / norm(); }
 };
+
+
+__host__ __device__ inline Vec3d operator*(double scalar, const Vec3d &vec) {
+    return vec * scalar;
+}
 
 #endif // VEC3D_CUH
