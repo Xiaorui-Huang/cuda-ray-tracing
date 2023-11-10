@@ -1,16 +1,16 @@
 #ifndef LIGHT_CUH
 #define LIGHT_CUH
 
-#include "Vec3d.cuh"
+#include "Float3d.cuh"
 
 enum class LightType { DirectionalLight, PointLight };
 
 struct DirectionalLight {
-    Vec3d direction;
+    float3d direction;
 };
 
 struct PointLight {
-    Vec3d position;
+    float3d position;
 };
 
 union LightData {
@@ -23,12 +23,12 @@ struct Light {
     LightType type;
     LightData data;
     // Intensity of the light
-    Vec3d color; 
+    float3d color; 
 
-    __host__ __device__ Light(const DirectionalLight &direction, const Vec3d &color)
+    __host__ __device__ Light(const DirectionalLight &direction, const float3d &color)
         : type(LightType::DirectionalLight), data({.directional = direction}), color(color) {}
 
-    __host__ __device__ Light(const PointLight &position, const Vec3d &color)
+    __host__ __device__ Light(const PointLight &position, const float3d &color)
         : type(LightType::PointLight), data({.point = position}), color(color) {}
 
     // Given a query point return the direction _toward_ the Light.
@@ -38,7 +38,7 @@ struct Light {
     // Outputs:
     //    direction  3D direction from point toward light as a vector.
     //    maxT  parametric distance from q along d to light (may be inf)
-    __device__ void direction(const Vec3d &query, Vec3d &direction, float &maxT) const {
+    __device__ void direction(const float3d &query, float3d &direction, float &maxT) const {
         switch (type) {
         case LightType::DirectionalLight:
             direction = -data.directional.direction;

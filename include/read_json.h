@@ -7,7 +7,7 @@
 #include <vector>
 
 // Implementation
-#include "Vec3d.cuh"
+#include "Float3d.cuh"
 
 #include "Camera.h"
 #include "Material.h"
@@ -55,14 +55,14 @@ inline bool readJson(const std::string &filename,
     json j;
     infile >> j;
 
-    auto parseVec3d = [](const json &j) -> Vec3d { return Vec3d(j[0], j[1], j[2]); };
+    auto parseFloat3d = [](const json &j) -> float3d { return float3d(j[0], j[1], j[2]); };
     // parse a vector
-    auto parseCamera = [&parseVec3d](const json &j, Camera &camera) {
+    auto parseCamera = [&parseFloat3d](const json &j, Camera &camera) {
         assert(j["type"] == "perspective" && "Only handling perspective cameras");
         camera.d = j["focal_length"].get<float>();
-        camera.e = parseVec3d(j["eye"]);
-        camera.v = parseVec3d(j["up"]).normalized();
-        camera.w = -parseVec3d(j["look"]).normalized();
+        camera.e = parseFloat3d(j["eye"]);
+        camera.v = parseFloat3d(j["up"]).normalized();
+        camera.w = -parseFloat3d(j["look"]).normalized();
         camera.u = camera.v.cross(camera.w);
         camera.height = j["height"].get<float>();
         camera.width = j["width"].get<float>();
@@ -71,39 +71,39 @@ inline bool readJson(const std::string &filename,
 
     std::unordered_map<std::string, std::shared_ptr<Material>> materialsMap;
     auto parseMaterialsMap =
-        [&parseVec3d](const json &j,
+        [&parseFloat3d](const json &j,
                       std::unordered_map<std::string, std::shared_ptr<Material>> &materialsMap) {
             materialsMap.clear();
             for (const json &jmat : j) {
                 std::string name = jmat["name"];
                 std::shared_ptr<Material> material(new Material());
-                material->ka = parseVec3d(jmat["ka"]);
-                material->kd = parseVec3d(jmat["kd"]);
-                material->ks = parseVec3d(jmat["ks"]);
-                material->km = parseVec3d(jmat["km"]);
+                material->ka = parseFloat3d(jmat["ka"]);
+                material->kd = parseFloat3d(jmat["kd"]);
+                material->ks = parseFloat3d(jmat["ks"]);
+                material->km = parseFloat3d(jmat["km"]);
                 material->phong_exponent = jmat["phong_exponent"];
                 materialsMap[name] = material;
             }
         };
     parseMaterialsMap(j["materials"], materialsMap);
 
-    auto parseLights = [&parseVec3d](const json &j, std::vector<Light> &lights) {
+    auto parseLights = [&parseFloat3d](const json &j, std::vector<Light> &lights) {
         lights.clear();
         for (const json &jlight : j) {
             if (jlight["type"] == "directional") {
                 DirectionalLight dirLight;
-                dirLight.direction = parseVec3d(jlight["direction"]).normalized();
-                lights.push_back(Light(dirLight, parseVec3d(jlight["color"])));
+                dirLight.direction = parseFloat3d(jlight["direction"]).normalized();
+                lights.push_back(Light(dirLight, parseFloat3d(jlight["color"])));
             } else if (jlight["type"] == "point") {
                 PointLight pointLight;
-                pointLight.position = parseVec3d(jlight["position"]);
-                lights.push_back(Light(pointLight, parseVec3d(jlight["color"])));
+                pointLight.position = parseFloat3d(jlight["position"]);
+                lights.push_back(Light(pointLight, parseFloat3d(jlight["color"])));
             }
         }
     };
     parseLights(j["lights"], lights);
 
-    auto parseObjects = [&parseVec3d, &filename, &materialsMap,
+    auto parseObjects = [&parseFloat3d, &filename, &materialsMap,
                          &materials](const json &j, std::vector<Object> &objects) {
         objects.clear();
         for (const json &jobj : j) {
@@ -114,18 +114,18 @@ inline bool readJson(const std::string &filename,
             }
             if (jobj["type"] == "sphere") {
                 Sphere sphere;
-                sphere.center = parseVec3d(jobj["center"]);
+                sphere.center = parseFloat3d(jobj["center"]);
                 sphere.radius = jobj["radius"].get<float>();
                 objects.push_back(Object(sphere));
             } else if (jobj["type"] == "plane") {
                 Plane plane;
-                plane.point = parseVec3d(jobj["point"]);
-                plane.normal = parseVec3d(jobj["normal"]).normalized();
+                plane.point = parseFloat3d(jobj["point"]);
+                plane.normal = parseFloat3d(jobj["normal"]).normalized();
                 objects.push_back(Object(plane));
             } else if (jobj["type"] == "triangle") {
                 Triangle tri =
-                    Triangle(parseVec3d(jobj["corners"][0]), parseVec3d(jobj["corners"][1]),
-                             parseVec3d(jobj["corners"][2]));
+                    Triangle(parseFloat3d(jobj["corners"][0]), parseFloat3d(jobj["corners"][1]),
+                             parseFloat3d(jobj["corners"][2]));
                 objects.push_back(Object(tri));
             } else if (jobj["type"] == "soup") {
                 std::vector<std::vector<float>> V;
@@ -142,9 +142,9 @@ inline bool readJson(const std::string &filename,
                 }
                 // std::shared_ptr<TriangleSoup> soup(new TriangleSoup());
                 for (int f = 0; f < F.size(); f++) {
-                    Triangle tri = Triangle(Vec3d(V[F[f][0]][0], V[F[f][0]][1], V[F[f][0]][2]),
-                                            Vec3d(V[F[f][1]][0], V[F[f][1]][1], V[F[f][1]][2]),
-                                            Vec3d(V[F[f][2]][0], V[F[f][2]][1], V[F[f][2]][2]));
+                    Triangle tri = Triangle(float3d(V[F[f][0]][0], V[F[f][0]][1], V[F[f][0]][2]),
+                                            float3d(V[F[f][1]][0], V[F[f][1]][1], V[F[f][1]][2]),
+                                            float3d(V[F[f][2]][0], V[F[f][2]][1], V[F[f][2]][2]));
                     // assigne material index
                     objects.push_back(Object(tri));
                     objects.back().materialIndex = materials.size() - 1;

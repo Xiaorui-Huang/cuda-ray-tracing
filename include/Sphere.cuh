@@ -1,13 +1,13 @@
 #ifndef SPHERE_CUH
 #define SPHERE_CUH
 
-#include "Vec3d.cuh"
+#include "Float3d.cuh"
 
 struct Ray;
 struct HitInfo;
 
 struct Sphere {
-    Vec3d center;
+    float3d center;
     float radius;
 
     __device__ bool intersect(const Ray &ray, float minT, float maxT, HitInfo &hitInfo) const; 

@@ -41,8 +41,8 @@ struct Object {
         : type(ObjectType::Plane), materialIndex(-1), data({.plane = plane}) {
 
         // Small epsilon value for the bounding box thickness
-        Vec3d minBounds(-INFINITY, -INFINITY, -INFINITY);
-        Vec3d maxBounds(INFINITY, INFINITY, INFINITY);
+        float3d minBounds(-INFINITY, -INFINITY, -INFINITY);
+        float3d maxBounds(INFINITY, INFINITY, INFINITY);
 
         // Check if the normal is parallel to the x-axis
         if (fabs(plane.normal.x()) > 1.0f - EPS) {

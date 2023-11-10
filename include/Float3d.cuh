@@ -1,18 +1,18 @@
-#ifndef VEC3D_CUH
-#define VEC3D_CUH
+#ifndef float3d_CUH
+#define float3d_CUH
 
 #include <cmath> 
 
-class Vec3d {
+class float3d{
   private:
     float data[3];
 
   public:
-    __host__ __device__ Vec3d() : data{0.0, 0.0, 0.0} {}
+    __host__ __device__ float3d() : data{0.0, 0.0, 0.0} {}
 
-    __host__ __device__ Vec3d(float x) : data{x, x, x} {}
+    __host__ __device__ float3d(float x) : data{x, x, x} {}
 
-    __host__ __device__ Vec3d(float x, float y, float z) : data{x, y, z} {}
+    __host__ __device__ float3d(float x, float y, float z) : data{x, y, z} {}
 
     __host__ __device__ inline float &x() { return data[0]; }
     __host__ __device__ inline const float &x() const { return data[0]; }
@@ -32,58 +32,58 @@ class Vec3d {
     __host__ __device__ inline const float &operator()(size_t index) const { return data[index]; }
 
     // Addition
-    __host__ __device__ inline Vec3d operator+(const Vec3d &other) const {
-        return Vec3d(x() + other.x(), y() + other.y(), z() + other.z());
+    __host__ __device__ inline float3d operator+(const float3d &other) const {
+        return float3d(x() + other.x(), y() + other.y(), z() + other.z());
     }
 
     // Subtraction
-    __host__ __device__ inline Vec3d operator-(const Vec3d &other) const {
-        return Vec3d(x() - other.x(), y() - other.y(), z() - other.z());
+    __host__ __device__ inline float3d operator-(const float3d &other) const {
+        return float3d(x() - other.x(), y() - other.y(), z() - other.z());
     }
 
     /// Unary minus
-    __host__ __device__ inline Vec3d operator-() const { 
-        return Vec3d(-data[0], -data[1], -data[2]); 
+    __host__ __device__ inline float3d operator-() const { 
+        return float3d(-data[0], -data[1], -data[2]); 
     }
 
     // Scalar multiplication
-    __host__ __device__ inline Vec3d operator*(float scalar) const {
-        return Vec3d(x() * scalar, y() * scalar, z() * scalar);
+    __host__ __device__ inline float3d operator*(float scalar) const {
+        return float3d(x() * scalar, y() * scalar, z() * scalar);
     }
 
 
     // Element-wise multiplication
-    __host__ __device__ inline Vec3d operator*(const Vec3d &other) const {
-        return Vec3d(x() * other.x(), y() * other.y(), z() * other.z());
+    __host__ __device__ inline float3d operator*(const float3d &other) const {
+        return float3d(x() * other.x(), y() * other.y(), z() * other.z());
     }
 
     // Scalar division
-    __host__ __device__ inline Vec3d operator/(float scalar) const {
+    __host__ __device__ inline float3d operator/(float scalar) const {
         float devisor = 1.0 / scalar;
         return (*this) * devisor;
     }
 
     // Dot product
-    __host__ __device__ inline float dot(const Vec3d &other) const {
+    __host__ __device__ inline float dot(const float3d &other) const {
         return x() * other.x() + y() * other.y() + z() * other.z();
     }
 
     // Cross product
-    __host__ __device__ inline Vec3d cross(const Vec3d &other) const {
-        return Vec3d(y() * other.z() - z() * other.y(), z() * other.x() - x() * other.z(),
+    __host__ __device__ inline float3d cross(const float3d &other) const {
+        return float3d(y() * other.z() - z() * other.y(), z() * other.x() - x() * other.z(),
                      x() * other.y() - y() * other.x());
     }
 
     __host__ __device__ inline float norm() const { return sqrt(dot(*this)); }
 
-    __host__ __device__ inline Vec3d normalized() const { return (*this) / norm(); }
+    __host__ __device__ inline float3d normalized() const { return (*this) / norm(); }
 
     __host__ __device__ inline void normalize() { (*this) = (*this) / norm(); }
 };
 
 
-__host__ __device__ inline Vec3d operator*(float scalar, const Vec3d &vec) {
+__host__ __device__ inline float3d operator*(float scalar, const float3d &vec) {
     return vec * scalar;
 }
 
-#endif // VEC3D_CUH
+#endif // float3d_CUH

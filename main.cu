@@ -10,7 +10,7 @@
 #include "Material.h"
 #include "Object.cuh"
 
-#include "Vec3d.cuh"
+#include "Float3d.cuh"
 // #include "raycolor.h"
 #include "read_json.h"
 // #include "viewing_ray.h"
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
         // std::cout << "\rprogress: " << (double)i * 100 / height << "%" << std::flush;
         for (unsigned j = 0; j < width; ++j) {
             // Set background color
-            Vec3d rgb(0, 0, 0);
+            float3d rgb(0, 0, 0);
 
             // Compute viewing ray
             // Ray ray;

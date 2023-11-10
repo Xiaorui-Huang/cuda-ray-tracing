@@ -1,19 +1,19 @@
 #ifndef TRIANGLE_CUH
 #define TRIANGLE_CUH
 
-#include "Vec3d.cuh"
+#include "Float3d.cuh"
 #include "util.h"
 
 struct Ray;
 struct HitInfo;
 
 struct Triangle {
-    Vec3d corners[3];
+    float3d corners[3];
 
-    __host__ __device__ Triangle(Vec3d a, Vec3d b, Vec3d c) : corners{a, b, c} {}
+    __host__ __device__ Triangle(float3d a, float3d b, float3d c) : corners{a, b, c} {}
     
-    __host__ __device__ Vec3d minCorner() const {
-        Vec3d minCorner = corners[0];
+    __host__ __device__ float3d minCorner() const {
+        float3d minCorner = corners[0];
         for (int i = 1; i < 3; i++) {
             minCorner.x() = min(corners[i].x(), minCorner.x());
             minCorner.y() = min(corners[i].y(), minCorner.y());
@@ -22,8 +22,8 @@ struct Triangle {
         return minCorner;
     }
 
-    __host__ __device__ Vec3d maxCorner() const {
-        Vec3d maxCorner = corners[0];
+    __host__ __device__ float3d maxCorner() const {
+        float3d maxCorner = corners[0];
         for (int i = 1; i < 3; i++) {
             maxCorner.x() = max(corners[i].x(), maxCorner.x());
             maxCorner.y() = max(corners[i].y(), maxCorner.y());

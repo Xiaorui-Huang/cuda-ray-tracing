@@ -1,12 +1,12 @@
 #ifndef HITINFO_CUH
 #define HITINFO_CUH
 
-#include "Vec3d.cuh"
+#include "Float3d.cuh"
 
 struct HitInfo {
     float tNear; // Distance from the ray origin to the nearest intersection
     float tFar;  // Distance from the ray origin to the farthest intersection
-    Vec3d normal; // Normal at the intersection
+    float3d normal; // Normal at the intersection
 
     // // Constructor to initialize with maximum distance (infinity) and invalid object ID
     // __device__ HitInfo() : tNear(INFINITY), tFar(INFINITY) {
