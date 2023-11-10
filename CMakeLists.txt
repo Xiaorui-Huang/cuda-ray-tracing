@@ -40,15 +40,15 @@ set(CMAKE_CUDA_FLAGS_DEBUG "-G -g") # '-G' for CUDA disables optimizations and '
 # CUDA compiler flags for Ampere architecture
 set(CMAKE_CUDA_ARCHITECTURES 86)
 
+# Create the executable
+add_executable(${PROJECT_NAME} ${SRCFILES})
+
 # Use FetchContent to add the nlohmann/json library
 include(FetchContent)
 FetchContent_Declare(json
     URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz
 )
 FetchContent_MakeAvailable(json)
-
-# Create the executable
-add_executable(${PROJECT_NAME} ${SRCFILES})
 
 # Link the nlohmann_json library with your project
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)

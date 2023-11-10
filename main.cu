@@ -25,6 +25,26 @@ int main(int argc, char *argv[]) {
     // read_json(argc <= 1 ? "../data/inside-a-sphere.json" : argv[1], camera, objectsVec,
     // lightsVec);
 
+    Object *dObjects = nullptr; // Pointer to device memory.
+
+    // Allocate memory on the device.
+    cudaMalloc(&dObjects, objects.size() * sizeof(Object));
+
+    // Copy data from host to device.
+    cudaMemcpy(dObjects, objects.data(), objects.size() * sizeof(Object),
+               cudaMemcpyHostToDevice);
+
+    // Now dObjects can be used in CUDA kernels.
+
+    // ... (Perform computations with dObjects in CUDA kernels)
+
+    // If you need to copy the results back to the host:
+    cudaMemcpy(objects.data(), dObjects, objects.size() * sizeof(Object),
+               cudaMemcpyDeviceToHost);
+
+    // Free the memory on the device when you're done with it.
+    cudaFree(dObjects);
+
     int width = 640;
     int height = 360;
     std::vector<unsigned char> rgb_image(3 * width * height);

@@ -42,6 +42,7 @@ inline bool read_json(const std::string &filename,
 #include <cassert>
 #include <fstream>
 #include <iostream>
+
 #include <nlohmann/json.hpp>
 
 // for convenience
@@ -54,7 +55,6 @@ inline bool read_json(const std::string &filename,
     //   std::vector<std::shared_ptr<Light>> &lights) {
     // Heavily borrowing from
     // https://github.com/yig/graphics101-raycasting/blob/master/parser.cpp
-    using json = nlohmann::json;
 
     std::ifstream infile(filename);
     if (!infile)
@@ -62,29 +62,32 @@ inline bool read_json(const std::string &filename,
     json j;
     infile >> j;
 
-    auto parseVector3d = [](const json &j) -> Vec3d { return Vec3d(j[0], j[1], j[2]); };
-    assert(j["type"] == "perspective" && "Only handling perspective cameras");
+    auto parseVec3d = [](const json &j) -> Vec3d { return Vec3d(j[0], j[1], j[2]); };
     // parse a vector
-    auto parseCamera = [&parseVector3d](const json &j, Camera &camera) {
-        camera.e = parseVector3d(j["eye"]);
-        camera.v = parseVector3d(j["up"]).normalized();
-        camera.w = -parseVector3d(j["look"]).normalized();
+    auto parseCamera = [&parseVec3d](const json &j, Camera &camera) {
+        assert(j["type"] == "perspective" && "Only handling perspective cameras");
+        camera.d = j["focal_length"].get<double>();
+        camera.e = parseVec3d(j["eye"]);
+        camera.v = parseVec3d(j["up"]).normalized();
+        camera.w = -parseVec3d(j["look"]).normalized();
+        camera.u = camera.v.cross(camera.w);
+        camera.height = j["height"].get<double>();
         camera.width = j["width"].get<double>();
     };
     parseCamera(j["camera"], camera);
 
     std::unordered_map<std::string, std::shared_ptr<Material>> materialsMap;
     auto parseMaterialsMap =
-        [&parseVector3d](const json &j,
-                         std::unordered_map<std::string, std::shared_ptr<Material>> &materialsMap) {
+        [&parseVec3d](const json &j,
+                      std::unordered_map<std::string, std::shared_ptr<Material>> &materialsMap) {
             materialsMap.clear();
             for (const json &jmat : j) {
                 std::string name = jmat["name"];
                 std::shared_ptr<Material> material(new Material());
-                material->ka = parseVector3d(jmat["ka"]);
-                material->kd = parseVector3d(jmat["kd"]);
-                material->ks = parseVector3d(jmat["ks"]);
-                material->km = parseVector3d(jmat["km"]);
+                material->ka = parseVec3d(jmat["ka"]);
+                material->kd = parseVec3d(jmat["kd"]);
+                material->ks = parseVec3d(jmat["ks"]);
+                material->km = parseVec3d(jmat["km"]);
                 material->phong_exponent = jmat["phong_exponent"];
                 materialsMap[name] = material;
             }
@@ -110,7 +113,7 @@ inline bool read_json(const std::string &filename,
     // };
     // parse_lights(j["lights"], lights);
 
-    auto parseObjects = [&parseVector3d, &filename, &materialsMap,
+    auto parseObjects = [&parseVec3d, &filename, &materialsMap,
                          &materials](const json &j, std::vector<Object> &objects) {
         objects.clear();
         for (const json &jobj : j) {
@@ -121,18 +124,18 @@ inline bool read_json(const std::string &filename,
             }
             if (jobj["type"] == "sphere") {
                 Sphere sphere;
-                sphere.center = parseVector3d(jobj["center"]);
+                sphere.center = parseVec3d(jobj["center"]);
                 sphere.radius = jobj["radius"].get<double>();
                 objects.push_back(Object(sphere));
             } else if (jobj["type"] == "plane") {
                 Plane plane;
-                plane.point = parseVector3d(jobj["point"]);
-                plane.normal = parseVector3d(jobj["normal"]).normalized();
+                plane.point = parseVec3d(jobj["point"]);
+                plane.normal = parseVec3d(jobj["normal"]).normalized();
                 objects.push_back(Object(plane));
             } else if (jobj["type"] == "triangle") {
                 Triangle tri =
-                    Triangle(parseVector3d(jobj["corners"][0]), parseVector3d(jobj["corners"][1]),
-                             parseVector3d(jobj["corners"][2]));
+                    Triangle(parseVec3d(jobj["corners"][0]), parseVec3d(jobj["corners"][1]),
+                             parseVec3d(jobj["corners"][2]));
                 objects.push_back(Object(tri));
             } else if (jobj["type"] == "soup") {
                 std::vector<std::vector<double>> V;

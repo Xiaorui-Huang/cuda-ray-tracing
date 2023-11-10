@@ -12,7 +12,7 @@ struct Triangle {
 
     __host__ __device__ Triangle(Vec3d a, Vec3d b, Vec3d c) : corners{a, b, c} {}
     
-    __host__ __device__ Vec3d minCorner() {
+    __host__ __device__ Vec3d minCorner() const {
         Vec3d minCorner = corners[0];
         for (int i = 1; i < 3; i++) {
             minCorner.x() = min(corners[i].x(), minCorner.x());
@@ -22,7 +22,7 @@ struct Triangle {
         return minCorner;
     }
 
-    __host__ __device__ Vec3d maxCorner() {
+    __host__ __device__ Vec3d maxCorner() const {
         Vec3d maxCorner = corners[0];
         for (int i = 1; i < 3; i++) {
             maxCorner.x() = max(corners[i].x(), maxCorner.x());

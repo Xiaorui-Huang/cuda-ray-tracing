@@ -17,9 +17,6 @@ union ObjectData {
     Plane plane;
     Sphere sphere;
     Triangle triangle;
-
-    // define defalt constructors, since union have non-trivial members
-    __host__ __device__ ObjectData() { memset(this, 0, sizeof(ObjectData)); }
 };
 
 // Assumes objects, globalTriangleSoup, lights are gloablly variables
@@ -29,14 +26,19 @@ struct Object {
     AABB boundingBox;
     int materialIndex; // Unique identifier for the object
 
-    __host__ __device__ Object(AABB aabb)
-        : type(ObjectType::AABB), boundingBox(aabb), materialIndex(-1) {
-        data.aabb = aabb;
-    }
+    __host__ __device__ Object(const AABB &aabb)
+        : type(ObjectType::AABB), boundingBox(aabb), materialIndex(-1), data({.aabb = aabb}) {}
 
-    __host__ __device__ Object(Plane plane)
-        : type(ObjectType::Plane), materialIndex(-1) {
-        data.plane = plane;
+    __host__ __device__ Object(const Sphere &sphere)
+        : type(ObjectType::Sphere), materialIndex(-1), data({.sphere = sphere}),
+          boundingBox(sphere.center - sphere.radius, sphere.center + sphere.radius) {}
+
+    __host__ __device__ Object(const Triangle &triangle)
+        : type(ObjectType::Triangle), materialIndex(-1), data({.triangle = triangle}),
+          boundingBox(triangle.minCorner(), triangle.maxCorner()) {}
+
+    __host__ __device__ Object(const Plane &plane)
+        : type(ObjectType::Plane), materialIndex(-1), data({.plane = plane}) {
 
         // Small epsilon value for the bounding box thickness
         Vec3d minBounds(-INFINITY, -INFINITY, -INFINITY);
@@ -59,18 +61,6 @@ struct Object {
         }
         // Set the bounding box for the plane
         boundingBox = AABB(minBounds, maxBounds);
-    }
-
-    __host__ __device__ Object(Sphere sphere)
-        : type(ObjectType::Sphere), materialIndex(-1) {
-        data.sphere = sphere;
-        boundingBox = AABB(sphere.center - sphere.radius, sphere.center + sphere.radius);
-    }
-
-    __host__ __device__ Object(Triangle triangle)
-        : type(ObjectType::Triangle), materialIndex(-1) {
-        data.triangle = triangle;
-        boundingBox = AABB(triangle.minCorner(), triangle.maxCorner());
     }
 
     __device__ bool intersect(const Ray &ray, float minT, float maxT, HitInfo &hitInfo) const {
