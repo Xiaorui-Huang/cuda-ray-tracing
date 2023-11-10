@@ -37,19 +37,19 @@ struct Light {
     //   query  3D query point in space
     // Outputs:
     //    direction  3D direction from point toward light as a vector.
-    //    maxT  parametric distance from q along d to light (may be inf)
-    __device__ void direction(const float3d &query, float3d &direction, float &maxT) const {
+    //    max_t  parametric distance from q along d to light (may be inf)
+    __device__ void direction(const float3d &query, float3d &direction, float &max_t) const {
         switch (type) {
         case LightType::DirectionalLight:
             direction = -data.directional.direction;
-            maxT = INFINITY; // Directional light is at infinity
+            max_t = INFINITY; // Directional light is at infinity
             break;
         case LightType::PointLight:
             direction = data.point.position - query;
-            maxT = 1;
+            max_t = 1;
             // here out implementation is not to use a unit direction vector
 
-            // maxT = direction.norm();           // Distance to the point light
+            // max_t = direction.norm();           // Distance to the point light
             // direction = direction.normalized(); // Normalize the direction
             break;
         }

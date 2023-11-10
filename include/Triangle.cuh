@@ -12,27 +12,27 @@ struct Triangle {
 
     __host__ __device__ Triangle(float3d a, float3d b, float3d c) : corners{a, b, c} {}
     
-    __host__ __device__ float3d minCorner() const {
-        float3d minCorner = corners[0];
+    __host__ __device__ float3d min_corner() const {
+        float3d corner = corners[0];
         for (int i = 1; i < 3; i++) {
-            minCorner.x() = min(corners[i].x(), minCorner.x());
-            minCorner.y() = min(corners[i].y(), minCorner.y());
-            minCorner.z() = min(corners[i].z(), minCorner.z());
+            corner.x() = min(corners[i].x(), corner.x());
+            corner.y() = min(corners[i].y(), corner.y());
+            corner.z() = min(corners[i].z(), corner.z());
         }
-        return minCorner;
+        return corner;
     }
 
-    __host__ __device__ float3d maxCorner() const {
-        float3d maxCorner = corners[0];
+    __host__ __device__ float3d max_corner() const {
+        float3d corner = corners[0];
         for (int i = 1; i < 3; i++) {
-            maxCorner.x() = max(corners[i].x(), maxCorner.x());
-            maxCorner.y() = max(corners[i].y(), maxCorner.y());
-            maxCorner.z() = max(corners[i].z(), maxCorner.z());
+            corner.x() = max(corners[i].x(), corner.x());
+            corner.y() = max(corners[i].y(), corner.y());
+            corner.z() = max(corners[i].z(), corner.z());
         }
-        return maxCorner;
+        return corner;
     }
 
-    __device__ bool intersect(const Ray &ray, float minT, float maxT, HitInfo &hitInfo) const;
+    __device__ bool intersect(const Ray &ray, float min_t, float max_t, HitInfo &hit_info) const;
 };
 
 #endif

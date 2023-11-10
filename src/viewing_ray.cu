@@ -1,6 +1,6 @@
-#include "viewing_ray.cuh"
+#include "generate_ray.cuh"
 
-__device__ void generateRay(
+__device__ void generate_ray(
     const Camera &camera, const int i, const int j, const int width, const int height, Ray &ray) {
     // Assumeing camera.u .v .w are all unit vectors
     float pxWidth = camera.width / width, pxHeight = camera.height / height;

@@ -25,6 +25,5 @@ struct BVHNode {
     int rightIndex;  // Index of the right child in the BVH node array
     int objectIndex; // Index of the associated object, -1 if it's not a leaf node
 };
-```
 
 #endif

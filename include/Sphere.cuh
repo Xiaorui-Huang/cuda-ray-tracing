@@ -10,7 +10,7 @@ struct Sphere {
     float3d center;
     float radius;
 
-    __device__ bool intersect(const Ray &ray, float minT, float maxT, HitInfo &hitInfo) const; 
+    __device__ bool intersect(const Ray &ray, float min_t, float max_t, HitInfo &hit_info) const; 
 };
 
 #endif

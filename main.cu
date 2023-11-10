@@ -11,20 +11,18 @@
 #include "Object.cuh"
 
 #include "Float3d.cuh"
-// #include "raycolor.h"
 #include "read_json.h"
-// #include "generateRay.h"
 #include "write_ppm.h"
 
 #include <cuda_runtime.h>
 
 
-__global__ void showMaterial(Material *d_materials) {
+__global__ void show_material(Material *d_materials) {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     printf("Material: %f\n", d_materials[i].phong_exponent);
 }
 
-__global__ void VecAdd(float *A, float *B, float *C, int N) {
+__global__ void vec_add(float *A, float *B, float *C, int N) {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     if (i < N)
         C[i] = A[i] + B[i];
@@ -49,10 +47,10 @@ int main(int argc, char *argv[]) {
 
     // send data to GPU
     // very well suited for __constant__ use case, except the data is too large
-    toCuda(d_camera, &camera);
-    toCuda(d_objects, objects.data(), objects.size());
-    toCuda(d_materials, materials.data(), materials.size());
-    toCuda(d_lights, lights.data(), lights.size());
+    to_cuda(d_camera, &camera);
+    to_cuda(d_objects, objects.data(), objects.size());
+    to_cuda(d_materials, materials.data(), materials.size());
+    to_cuda(d_lights, lights.data(), lights.size());
 
     std::cout << "Memory Cost: "
               << sizeof(Camera) + objects.size() * sizeof(Object) +
@@ -60,7 +58,7 @@ int main(int argc, char *argv[]) {
               << std::endl;
 
     // kernel test func
-    showMaterial<<<1, materials.size()>>>(d_materials);
+    show_material<<<1, materials.size()>>>(d_materials);
 
     int width = 1920;
     int height = 1080;
@@ -76,7 +74,7 @@ int main(int argc, char *argv[]) {
 
             // Compute viewing ray
             // Ray ray;
-            // generateRay(camera, i, j, width, height, ray);
+            // generate_ray(camera, i, j, width, height, ray);
 
             // Shoot ray and collect color
             // raycolor(ray, 1.0, objects, lights, 0, rgb);

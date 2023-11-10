@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 
-__global__ void VecAdd(float *A, float *B, float *C, int N) {
+__global__ void vec_add(float *A, float *B, float *C, int N) {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     if (i < N)
         C[i] = A[i] + B[i];
@@ -37,7 +37,7 @@ int main() {
 
     // int threadsPerBlock = 256;
     // int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
-    VecAdd<<<1, N>>>(d_A, d_B, d_C, N);
+    vec_add<<<1, N>>>(d_A, d_B, d_C, N);
     cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);
     
     std::cout << h_C[0] << " " << h_C[1] << " " << h_C[2] << std::endl;

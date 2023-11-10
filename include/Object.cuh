@@ -23,59 +23,59 @@ union ObjectData {
 struct Object {
     ObjectData data;
     ObjectType type;
-    AABB boundingBox;
-    int materialIndex; // Unique identifier for the object
+    AABB bounding_box;
+    int material_index; // Unique identifier for the object
 
     __host__ __device__ Object(const AABB &aabb)
-        : type(ObjectType::AABB), boundingBox(aabb), materialIndex(-1), data({.aabb = aabb}) {}
+        : type(ObjectType::AABB), bounding_box(aabb), material_index(-1), data({.aabb = aabb}) {}
 
     __host__ __device__ Object(const Sphere &sphere)
-        : type(ObjectType::Sphere), materialIndex(-1), data({.sphere = sphere}),
-          boundingBox(sphere.center - sphere.radius, sphere.center + sphere.radius) {}
+        : type(ObjectType::Sphere), material_index(-1), data({.sphere = sphere}),
+          bounding_box(sphere.center - sphere.radius, sphere.center + sphere.radius) {}
 
     __host__ __device__ Object(const Triangle &triangle)
-        : type(ObjectType::Triangle), materialIndex(-1), data({.triangle = triangle}),
-          boundingBox(triangle.minCorner(), triangle.maxCorner()) {}
+        : type(ObjectType::Triangle), material_index(-1), data({.triangle = triangle}),
+          bounding_box(triangle.min_corner(), triangle.max_corner()) {}
 
     __host__ __device__ Object(const Plane &plane)
-        : type(ObjectType::Plane), materialIndex(-1), data({.plane = plane}) {
+        : type(ObjectType::Plane), material_index(-1), data({.plane = plane}) {
 
         // Small epsilon value for the bounding box thickness
-        float3d minBounds(-INFINITY, -INFINITY, -INFINITY);
-        float3d maxBounds(INFINITY, INFINITY, INFINITY);
+        float3d min_bounds(-INFINITY, -INFINITY, -INFINITY);
+        float3d max_bounds(INFINITY, INFINITY, INFINITY);
 
         // Check if the normal is parallel to the x-axis
         if (fabs(plane.normal.x()) > 1.0f - EPS) {
-            minBounds.x() = plane.point.x() - EPS;
-            maxBounds.x() = plane.point.x() + EPS;
+            min_bounds.x() = plane.point.x() - EPS;
+            max_bounds.x() = plane.point.x() + EPS;
         }
         // Check if the normal is parallel to the y-axis
         else if (fabs(plane.normal.y()) > 1.0f - EPS) {
-            minBounds.y() = plane.point.y() - EPS;
-            maxBounds.y() = plane.point.y() + EPS;
+            min_bounds.y() = plane.point.y() - EPS;
+            max_bounds.y() = plane.point.y() + EPS;
         }
         // Check if the normal is parallel to the z-axis
         else if (fabs(plane.normal.z()) > 1.0f - EPS) {
-            minBounds.z() = plane.point.z() - EPS;
-            maxBounds.z() = plane.point.z() + EPS;
+            min_bounds.z() = plane.point.z() - EPS;
+            max_bounds.z() = plane.point.z() + EPS;
         }
         // Set the bounding box for the plane
-        boundingBox = AABB(minBounds, maxBounds);
+        bounding_box = AABB(min_bounds, max_bounds);
     }
 
-    __device__ bool intersect(const Ray &ray, float minT, float maxT, HitInfo &hitInfo) const {
-        if (!boundingBox.intersect(ray, minT, maxT, hitInfo)) {
+    __device__ bool intersect(const Ray &ray, float min_t, float max_t, HitInfo &hit_info) const {
+        if (!bounding_box.intersect(ray, min_t, max_t, hit_info)) {
             return false; // Bounding box check first for early exit
         }
 
         // Object-specific intersection
         switch (type) {
         case ObjectType::Plane:
-            return data.plane.intersect(ray, minT, maxT, hitInfo);
+            return data.plane.intersect(ray, min_t, max_t, hit_info);
         case ObjectType::Sphere:
-            return data.sphere.intersect(ray, minT, maxT, hitInfo);
+            return data.sphere.intersect(ray, min_t, max_t, hit_info);
         case ObjectType::Triangle:
-            return data.triangle.intersect(ray, minT, maxT, hitInfo);
+            return data.triangle.intersect(ray, min_t, max_t, hit_info);
         default:
             return false; // Unrecognized object type
         }

@@ -55,77 +55,77 @@ inline bool readJson(const std::string &filename,
     json j;
     infile >> j;
 
-    auto parseFloat3d = [](const json &j) -> float3d { return float3d(j[0], j[1], j[2]); };
+    auto parse_float3d = [](const json &j) -> float3d { return float3d(j[0], j[1], j[2]); };
     // parse a vector
-    auto parseCamera = [&parseFloat3d](const json &j, Camera &camera) {
+    auto parse_camera = [&parse_float3d](const json &j, Camera &camera) {
         assert(j["type"] == "perspective" && "Only handling perspective cameras");
         camera.d = j["focal_length"].get<float>();
-        camera.e = parseFloat3d(j["eye"]);
-        camera.v = parseFloat3d(j["up"]).normalized();
-        camera.w = -parseFloat3d(j["look"]).normalized();
+        camera.e = parse_float3d(j["eye"]);
+        camera.v = parse_float3d(j["up"]).normalized();
+        camera.w = -parse_float3d(j["look"]).normalized();
         camera.u = camera.v.cross(camera.w);
         camera.height = j["height"].get<float>();
         camera.width = j["width"].get<float>();
     };
-    parseCamera(j["camera"], camera);
+    parse_camera(j["camera"], camera);
 
-    std::unordered_map<std::string, std::shared_ptr<Material>> materialsMap;
-    auto parseMaterialsMap =
-        [&parseFloat3d](const json &j,
-                      std::unordered_map<std::string, std::shared_ptr<Material>> &materialsMap) {
-            materialsMap.clear();
+    std::unordered_map<std::string, std::shared_ptr<Material>> materials_map;
+    auto parse_materials_map =
+        [&parse_float3d](const json &j,
+                      std::unordered_map<std::string, std::shared_ptr<Material>> &materials_map) {
+            materials_map.clear();
             for (const json &jmat : j) {
                 std::string name = jmat["name"];
                 std::shared_ptr<Material> material(new Material());
-                material->ka = parseFloat3d(jmat["ka"]);
-                material->kd = parseFloat3d(jmat["kd"]);
-                material->ks = parseFloat3d(jmat["ks"]);
-                material->km = parseFloat3d(jmat["km"]);
+                material->ka = parse_float3d(jmat["ka"]);
+                material->kd = parse_float3d(jmat["kd"]);
+                material->ks = parse_float3d(jmat["ks"]);
+                material->km = parse_float3d(jmat["km"]);
                 material->phong_exponent = jmat["phong_exponent"];
-                materialsMap[name] = material;
+                materials_map[name] = material;
             }
         };
-    parseMaterialsMap(j["materials"], materialsMap);
+    parse_materials_map(j["materials"], materials_map);
 
-    auto parseLights = [&parseFloat3d](const json &j, std::vector<Light> &lights) {
+    auto parse_lights = [&parse_float3d](const json &j, std::vector<Light> &lights) {
         lights.clear();
         for (const json &jlight : j) {
             if (jlight["type"] == "directional") {
-                DirectionalLight dirLight;
-                dirLight.direction = parseFloat3d(jlight["direction"]).normalized();
-                lights.push_back(Light(dirLight, parseFloat3d(jlight["color"])));
+                DirectionalLight dir_light;
+                dir_light.direction = parse_float3d(jlight["direction"]).normalized();
+                lights.push_back(Light(dir_light, parse_float3d(jlight["color"])));
             } else if (jlight["type"] == "point") {
-                PointLight pointLight;
-                pointLight.position = parseFloat3d(jlight["position"]);
-                lights.push_back(Light(pointLight, parseFloat3d(jlight["color"])));
+                PointLight point_light;
+                point_light.position = parse_float3d(jlight["position"]);
+                lights.push_back(Light(point_light, parse_float3d(jlight["color"])));
             }
         }
     };
-    parseLights(j["lights"], lights);
+    parse_lights(j["lights"], lights);
 
-    auto parseObjects = [&parseFloat3d, &filename, &materialsMap,
+    auto parse_objects = [&parse_float3d, &filename, &materials_map,
                          &materials](const json &j, std::vector<Object> &objects) {
         objects.clear();
         for (const json &jobj : j) {
             if (jobj.count("material")) {
-                if (materialsMap.count(jobj["material"])) {
-                    materials.push_back(*materialsMap[jobj["material"]]);
+                if (materials_map.count(jobj["material"])) {
+                    materials.push_back(*materials_map[jobj["material"]]);
                 }
             }
             if (jobj["type"] == "sphere") {
                 Sphere sphere;
-                sphere.center = parseFloat3d(jobj["center"]);
+                sphere.center = parse_float3d(jobj["center"]);
                 sphere.radius = jobj["radius"].get<float>();
                 objects.push_back(Object(sphere));
             } else if (jobj["type"] == "plane") {
                 Plane plane;
-                plane.point = parseFloat3d(jobj["point"]);
-                plane.normal = parseFloat3d(jobj["normal"]).normalized();
+                plane.point = parse_float3d(jobj["point"]);
+                plane.normal = parse_float3d(jobj["normal"]).normalized();
                 objects.push_back(Object(plane));
             } else if (jobj["type"] == "triangle") {
                 Triangle tri =
-                    Triangle(parseFloat3d(jobj["corners"][0]), parseFloat3d(jobj["corners"][1]),
-                             parseFloat3d(jobj["corners"][2]));
+                    Triangle(parse_float3d(jobj["corners"][0]), parse_float3d(jobj["corners"][1]),
+                             parse_float3d(jobj["corners"][2]));
                 objects.push_back(Object(tri));
             } else if (jobj["type"] == "soup") {
                 std::vector<std::vector<float>> V;
@@ -147,14 +147,14 @@ inline bool readJson(const std::string &filename,
                                             float3d(V[F[f][2]][0], V[F[f][2]][1], V[F[f][2]][2]));
                     // assigne material index
                     objects.push_back(Object(tri));
-                    objects.back().materialIndex = materials.size() - 1;
+                    objects.back().material_index = materials.size() - 1;
                 }
             }
 
-            objects.back().materialIndex = materials.size() - 1;
+            objects.back().material_index = materials.size() - 1;
         }
     };
-    parseObjects(j["objects"], objects);
+    parse_objects(j["objects"], objects);
     return true;
 };
 

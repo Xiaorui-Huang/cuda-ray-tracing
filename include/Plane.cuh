@@ -10,7 +10,7 @@ struct Plane {
     float3d point;
     float3d normal;
 
-    __device__ bool intersect(const Ray &ray, float minT, float maxT, HitInfo &hitInfo) const;
+    __device__ bool intersect(const Ray &ray, float min_t, float max_t, HitInfo &hit_info) const;
 };
 
 # endif
