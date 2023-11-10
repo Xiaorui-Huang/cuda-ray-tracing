@@ -1,5 +1,5 @@
-#ifndef CUDA_LIGHT_H
-#define CUDA_LIGHT_H
+#ifndef LIGHT_CUH
+#define LIGHT_CUH
 
 #include "Vec3d.cuh"
 
@@ -22,12 +22,14 @@ union LightData {
 struct Light {
     LightType type;
     LightData data;
+    // Intensity of the light
+    Vec3d color; 
 
-    __host__ __device__ Light(const Vec3d &direction)
-        : type(LightType::DirectionalLight), data({.directional = direction}) {}
+    __host__ __device__ Light(const DirectionalLight &direction, const Vec3d &color)
+        : type(LightType::DirectionalLight), data({.directional = direction}), color(color) {}
 
-    __host__ __device__ Light(const Vec3d &position)
-        : type(LightType::PointLight), data({.point = position}) {}
+    __host__ __device__ Light(const PointLight &position, const Vec3d &color)
+        : type(LightType::PointLight), data({.point = position}), color(color) {}
 
     // Given a query point return the direction _toward_ the Light.
     //
@@ -39,13 +41,16 @@ struct Light {
     __device__ void direction(const Vec3d &query, Vec3d &direction, double &maxT) const {
         switch (type) {
         case LightType::DirectionalLight:
-            direction = data.directional.direction;
+            direction = -data.directional.direction;
             maxT = INFINITY; // Directional light is at infinity
             break;
         case LightType::PointLight:
             direction = data.point.position - query;
-            maxT = direction.norm();           // Distance to the point light
-            direction = direction.normalized(); // Normalize the direction
+            maxT = 1;
+            // here out implementation is not to use a unit direction vector
+
+            // maxT = direction.norm();           // Distance to the point light
+            // direction = direction.normalized(); // Normalize the direction
             break;
         }
     }

@@ -6,32 +6,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Camera.h"
-// Forward declaration
-struct Object;
-struct Light;
-
-// Read a scene description from a .json file
-//
-// Input:
-//   filename  path to .json file
-// Output:
-//   camera  camera looking at the scene
-//   objects  list of shared pointers to objects
-//   lights  list of shared pointers to lights
-inline bool read_json(const std::string &filename,
-                      Camera &camera,
-                      std::vector<std::shared_ptr<Object>> &objects,
-                      std::vector<std::shared_ptr<Light>> &lights);
-
 // Implementation
 #include "Vec3d.cuh"
 
-// #include "DirectionalLight.h"
-// #include "Light.h"
-// #include "PointLight.h"
-
+#include "Camera.h"
 #include "Material.h"
+
+#include "Light.cuh"
 #include "Object.cuh"
 #include "Plane.cuh"
 #include "Sphere.cuh"
@@ -45,14 +26,26 @@ inline bool read_json(const std::string &filename,
 
 #include <nlohmann/json.hpp>
 
+// Forward declaration
+struct Object;
+struct Light;
+
 // for convenience
 using json = nlohmann::json;
 
-inline bool read_json(const std::string &filename,
-                      Camera &camera,
-                      std::vector<Object> &objects,
-                      std::vector<Material> &materials) {
-    //   std::vector<std::shared_ptr<Light>> &lights) {
+// Read a scene description from a .json file
+//
+// Input:
+//   filename  path to .json file
+// Output:
+//   camera  camera looking at the scene
+//   objects  list of shared pointers to objects
+//   lights  list of shared pointers to lights
+inline bool readJson(const std::string &filename,
+                     Camera &camera,
+                     std::vector<Object> &objects,
+                     std::vector<Light> &lights,
+                     std::vector<Material> &materials) {
     // Heavily borrowing from
     // https://github.com/yig/graphics101-raycasting/blob/master/parser.cpp
 
@@ -94,24 +87,21 @@ inline bool read_json(const std::string &filename,
         };
     parseMaterialsMap(j["materials"], materialsMap);
 
-    // auto parse_lights = [&parse_Vector3d](const json &j, std::vector<std::shared_ptr<Light>>
-    // &lights) {
-    //     lights.clear();
-    //     for (const json &jlight : j) {
-    //         if (jlight["type"] == "directional") {
-    //             std::shared_ptr<DirectionalLight> light(new DirectionalLight());
-    //             light->d = parse_Vector3d(jlight["direction"]).normalized();
-    //             light->I = parse_Vector3d(jlight["color"]);
-    //             lights.push_back(light);
-    //         } else if (jlight["type"] == "point") {
-    //             std::shared_ptr<PointLight> light(new PointLight());
-    //             light->p = parse_Vector3d(jlight["position"]);
-    //             light->I = parse_Vector3d(jlight["color"]);
-    //             lights.push_back(light);
-    //         }
-    //     }
-    // };
-    // parse_lights(j["lights"], lights);
+    auto parseLights = [&parseVec3d](const json &j, std::vector<Light> &lights) {
+        lights.clear();
+        for (const json &jlight : j) {
+            if (jlight["type"] == "directional") {
+                DirectionalLight dirLight;
+                dirLight.direction = parseVec3d(jlight["direction"]).normalized();
+                lights.push_back(Light(dirLight, parseVec3d(jlight["color"])));
+            } else if (jlight["type"] == "point") {
+                PointLight pointLight;
+                pointLight.position = parseVec3d(jlight["position"]);
+                lights.push_back(Light(pointLight, parseVec3d(jlight["color"])));
+            }
+        }
+    };
+    parseLights(j["lights"], lights);
 
     auto parseObjects = [&parseVec3d, &filename, &materialsMap,
                          &materials](const json &j, std::vector<Object> &objects) {

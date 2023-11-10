@@ -6,9 +6,11 @@
 #include <vector>
 
 #include "Camera.h"
-#include "Vec3d.cuh"
-// #include "Light.h"
+#include "Light.cuh"
+#include "Material.h"
 #include "Object.cuh"
+
+#include "Vec3d.cuh"
 // #include "raycolor.h"
 #include "read_json.h"
 // #include "viewing_ray.h"
@@ -18,32 +20,41 @@ int main(int argc, char *argv[]) {
     Camera camera;
     std::vector<Object> objects;
     std::vector<Material> materials;
+    std::vector<Light> lights;
 
     // Read a camera and scene description from given .json file
 
-    read_json(argc <= 1 ? "../data/bunny.json" : argv[1], camera, objects, materials);
-    // read_json(argc <= 1 ? "../data/inside-a-sphere.json" : argv[1], camera, objectsVec,
+    // readJson(argc <= 1 ? "../data/bunny.json" : argv[1], camera, objects, lights, materials);
+    readJson(argc <= 1 ? "../data/inside-a-sphere.json" : argv[1], camera, objects, lights,
+             materials);
     // lightsVec);
 
-    Object *dObjects = nullptr; // Pointer to device memory.
+    Camera *d_camera;
+    Object *d_objects;
+    Material *d_materials;
+    Light *d_lights;
 
-    // Allocate memory on the device.
-    cudaMalloc(&dObjects, objects.size() * sizeof(Object));
+    cudaMalloc(&d_camera, sizeof(Camera));
+    cudaMemcpy(d_camera, &camera, sizeof(Camera), cudaMemcpyHostToDevice);
 
-    // Copy data from host to device.
-    cudaMemcpy(dObjects, objects.data(), objects.size() * sizeof(Object),
+    cudaMalloc(&d_objects, objects.size() * sizeof(Object));
+    cudaMemcpy(d_objects, objects.data(), objects.size() * sizeof(Object), cudaMemcpyHostToDevice);
+
+    cudaMalloc(&d_materials, materials.size() * sizeof(Material));
+    cudaMemcpy(d_materials, materials.data(), materials.size() * sizeof(Material),
                cudaMemcpyHostToDevice);
 
-    // Now dObjects can be used in CUDA kernels.
+    cudaMalloc(&d_lights, lights.size() * sizeof(Light));
+    cudaMemcpy(d_lights, lights.data(), lights.size() * sizeof(Light), cudaMemcpyHostToDevice);
+    
+    
+    std::cout << "Memory Cost: " << sizeof(Camera) + objects.size() * sizeof(Object) + materials.size() * sizeof(Material) + lights.size() * sizeof(Light) << std::endl;
 
-    // ... (Perform computations with dObjects in CUDA kernels)
 
-    // If you need to copy the results back to the host:
-    cudaMemcpy(objects.data(), dObjects, objects.size() * sizeof(Object),
-               cudaMemcpyDeviceToHost);
-
-    // Free the memory on the device when you're done with it.
-    cudaFree(dObjects);
+    // cudaFree(d_camera);
+    // cudaFree(d_objects);
+    // cudaFree(d_materials);
+    // cudaFree(d_lights);
 
     int width = 640;
     int height = 360;
