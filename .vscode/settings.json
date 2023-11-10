@@ -1,9 +1,10 @@
 {
     "files.associations": {
-        "*.cuh": "cuda-cpp",
         "*.tcs": "glsl",
         "*.fs": "glsl",
         "*.tes": "glsl",
+        "*.cu": "cuda-cpp",
+        "*.cuh": "cuda-cpp",
         "memory": "cpp",
         "vector": "cpp",
         "unordered_map": "cpp",
@@ -56,8 +57,10 @@
         "streambuf": "cpp",
         "typeinfo": "cpp",
         "valarray": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "ranges": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled",
-    "C_Cpp.clang_format_fallbackStyle": "LLVM"
+    "C_Cpp.clang_format_fallbackStyle": "LLVM",
+    "C_Cpp.default.compilerPath": "/usr/local/cuda/bin/nvcc"
 }

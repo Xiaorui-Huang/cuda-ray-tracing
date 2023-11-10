@@ -16,6 +16,20 @@
 // #include "viewing_ray.h"
 #include "write_ppm.h"
 
+#include <cuda_runtime.h>
+
+
+__global__ void showMaterial(Material *d_materials) {
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    printf("Material: %f\n", d_materials[i].phong_exponent);
+}
+
+__global__ void VecAdd(float *A, float *B, float *C, int N) {
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < N)
+        C[i] = A[i] + B[i];
+}
+
 int main(int argc, char *argv[]) {
     Camera camera;
     std::vector<Object> objects;
@@ -24,37 +38,27 @@ int main(int argc, char *argv[]) {
 
     // Read a camera and scene description from given .json file
 
-    // readJson(argc <= 1 ? "../data/bunny.json" : argv[1], camera, objects, lights, materials);
-    readJson(argc <= 1 ? "../data/inside-a-sphere.json" : argv[1], camera, objects, lights,
-             materials);
-    // lightsVec);
+    readJson(argc <= 1 ? "../data/bunny.json" : argv[1], camera, objects, lights, materials);
+    // readJson(argc <= 1 ? "../data/inside-a-sphere.json" : argv[1], camera,
+    // objects, lights, materials);
 
     Camera *d_camera;
     Object *d_objects;
     Material *d_materials;
     Light *d_lights;
 
-    cudaMalloc(&d_camera, sizeof(Camera));
-    cudaMemcpy(d_camera, &camera, sizeof(Camera), cudaMemcpyHostToDevice);
+    // very well suited for __constant__ use case, except the data is too large
+    toCuda(d_camera, &camera);
+    toCuda(d_objects, objects.data(), objects.size());
+    toCuda(d_materials, materials.data(), materials.size());
+    toCuda(d_lights, lights.data(), lights.size());
 
-    cudaMalloc(&d_objects, objects.size() * sizeof(Object));
-    cudaMemcpy(d_objects, objects.data(), objects.size() * sizeof(Object), cudaMemcpyHostToDevice);
+    std::cout << "Memory Cost: "
+              << sizeof(Camera) + objects.size() * sizeof(Object) +
+                     materials.size() * sizeof(Material) + lights.size() * sizeof(Light)
+              << std::endl;
 
-    cudaMalloc(&d_materials, materials.size() * sizeof(Material));
-    cudaMemcpy(d_materials, materials.data(), materials.size() * sizeof(Material),
-               cudaMemcpyHostToDevice);
-
-    cudaMalloc(&d_lights, lights.size() * sizeof(Light));
-    cudaMemcpy(d_lights, lights.data(), lights.size() * sizeof(Light), cudaMemcpyHostToDevice);
-    
-    
-    std::cout << "Memory Cost: " << sizeof(Camera) + objects.size() * sizeof(Object) + materials.size() * sizeof(Material) + lights.size() * sizeof(Light) << std::endl;
-
-
-    // cudaFree(d_camera);
-    // cudaFree(d_objects);
-    // cudaFree(d_materials);
-    // cudaFree(d_lights);
+    showMaterial<<<1, materials.size()>>>(d_materials);
 
     int width = 640;
     int height = 360;
@@ -85,4 +89,9 @@ int main(int argc, char *argv[]) {
     std::cout << std::endl;
 
     write_ppm("rgb.ppm", rgb_image, width, height, 3);
+
+    cudaFree(d_camera);
+    cudaFree(d_objects);
+    cudaFree(d_materials);
+    cudaFree(d_lights);
 }
