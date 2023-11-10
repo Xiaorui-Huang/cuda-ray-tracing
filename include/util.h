@@ -10,14 +10,23 @@
  * @param num
  */
 template <typename T> inline void toCuda(T *&d_Ptr, T *h_Ptr, size_t num = 1) {
-    cudaMalloc(&d_Ptr, sizeof(T) * num);
-    cudaMemcpy(d_Ptr, h_Ptr, sizeof(T) * num, cudaMemcpyHostToDevice);
+    // Allocate memory on the GPU
+    cudaError_t err = cudaMalloc(&d_Ptr, sizeof(T) * num);
+    if (err != cudaSuccess)
+        throw std::runtime_error("CUDA Error in cudaMalloc: " +
+                                 std::string(cudaGetErrorString(err)));
+
+    // Copy data from host to device
+    err = cudaMemcpy(d_Ptr, h_Ptr, sizeof(T) * num, cudaMemcpyHostToDevice);
+    if (err != cudaSuccess) {
+        cudaFree(d_Ptr); // Clean up GPU memory allocation
+        throw std::runtime_error("CUDA Error in cudaMemcpy: " +
+                                 std::string(cudaGetErrorString(err)));
+    }
 }
 
-template <typename T>
-__device__ inline T min(T a, T b) { return a < b ? a : b; }
+template <typename T> __device__ inline T min(T a, T b) { return a < b ? a : b; }
 
-template <typename T>
-__device__ inline T max(T a, T b) { return a < b ? b : a; }
+template <typename T> __device__ inline T max(T a, T b) { return a < b ? b : a; }
 
 #endif

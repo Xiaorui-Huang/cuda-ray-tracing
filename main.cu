@@ -13,7 +13,7 @@
 #include "Float3d.cuh"
 // #include "raycolor.h"
 #include "read_json.h"
-// #include "viewing_ray.h"
+// #include "generateRay.h"
 #include "write_ppm.h"
 
 #include <cuda_runtime.h>
@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
     Material *d_materials;
     Light *d_lights;
 
+    // send data to GPU
     // very well suited for __constant__ use case, except the data is too large
     toCuda(d_camera, &camera);
     toCuda(d_objects, objects.data(), objects.size());
@@ -58,10 +59,11 @@ int main(int argc, char *argv[]) {
                      materials.size() * sizeof(Material) + lights.size() * sizeof(Light)
               << std::endl;
 
+    // kernel test func
     showMaterial<<<1, materials.size()>>>(d_materials);
 
-    int width = 640;
-    int height = 360;
+    int width = 1920;
+    int height = 1080;
     std::vector<unsigned char> rgb_image(3 * width * height);
 
     // For each pixel (i,j)
@@ -74,7 +76,7 @@ int main(int argc, char *argv[]) {
 
             // Compute viewing ray
             // Ray ray;
-            // viewing_ray(camera, i, j, width, height, ray);
+            // generateRay(camera, i, j, width, height, ray);
 
             // Shoot ray and collect color
             // raycolor(ray, 1.0, objects, lights, 0, rgb);

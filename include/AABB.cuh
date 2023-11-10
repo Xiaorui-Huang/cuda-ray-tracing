@@ -19,4 +19,12 @@ struct AABB {
     __device__ bool intersect(const Ray &ray, float minT, float maxT, HitInfo &hitInfo) const;
 };
 
+struct BVHNode {
+    AABB box;
+    int leftIndex;   // Index of the left child in the BVH node array
+    int rightIndex;  // Index of the right child in the BVH node array
+    int objectIndex; // Index of the associated object, -1 if it's not a leaf node
+};
+```
+
 #endif

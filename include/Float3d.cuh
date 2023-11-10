@@ -1,5 +1,5 @@
-#ifndef float3d_CUH
-#define float3d_CUH
+#ifndef FLOAT3D_CUH
+#define FLOAT3D_CUH
 
 #include <cmath> 
 

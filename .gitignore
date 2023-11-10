@@ -57,6 +57,7 @@ build_release
 cpp
 includeCpp
 main.cpp
+srcCpp
 
 # Cuda Sample files
 /cuda_samples/*

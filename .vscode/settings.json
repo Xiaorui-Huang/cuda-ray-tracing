@@ -62,5 +62,9 @@
     },
     "C_Cpp.errorSquiggles": "enabled",
     "C_Cpp.clang_format_fallbackStyle": "LLVM",
-    "C_Cpp.default.compilerPath": "/usr/local/cuda/bin/nvcc"
+    "C_Cpp.default.compilerPath": "/usr/local/cuda/bin/nvcc",
+    "files.readonlyInclude": {
+        "includeCpp": true,
+        "srcCpp": true
+    }
 }
