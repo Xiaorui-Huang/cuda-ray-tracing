@@ -9,6 +9,6 @@ struct Material
   // Ambient, Diffuse, Specular, Mirror Color
   Vec3d ka,kd,ks,km;
   // Phong exponent
-  double phong_exponent;
+  float phong_exponent;
 };
 #endif

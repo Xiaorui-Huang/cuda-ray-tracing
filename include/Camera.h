@@ -10,9 +10,9 @@ struct Camera
   // orthonormal frame so that -w is the viewing direction. 
   Vec3d u,v,w;
   // image plane distance / focal length
-  double d;
+  float d;
   // width and height of image plane
-  double width, height;
+  float width, height;
 };
 
 #endif

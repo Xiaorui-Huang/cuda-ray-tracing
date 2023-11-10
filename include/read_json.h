@@ -59,13 +59,13 @@ inline bool readJson(const std::string &filename,
     // parse a vector
     auto parseCamera = [&parseVec3d](const json &j, Camera &camera) {
         assert(j["type"] == "perspective" && "Only handling perspective cameras");
-        camera.d = j["focal_length"].get<double>();
+        camera.d = j["focal_length"].get<float>();
         camera.e = parseVec3d(j["eye"]);
         camera.v = parseVec3d(j["up"]).normalized();
         camera.w = -parseVec3d(j["look"]).normalized();
         camera.u = camera.v.cross(camera.w);
-        camera.height = j["height"].get<double>();
-        camera.width = j["width"].get<double>();
+        camera.height = j["height"].get<float>();
+        camera.width = j["width"].get<float>();
     };
     parseCamera(j["camera"], camera);
 
@@ -115,7 +115,7 @@ inline bool readJson(const std::string &filename,
             if (jobj["type"] == "sphere") {
                 Sphere sphere;
                 sphere.center = parseVec3d(jobj["center"]);
-                sphere.radius = jobj["radius"].get<double>();
+                sphere.radius = jobj["radius"].get<float>();
                 objects.push_back(Object(sphere));
             } else if (jobj["type"] == "plane") {
                 Plane plane;
@@ -128,8 +128,8 @@ inline bool readJson(const std::string &filename,
                              parseVec3d(jobj["corners"][2]));
                 objects.push_back(Object(tri));
             } else if (jobj["type"] == "soup") {
-                std::vector<std::vector<double>> V;
-                std::vector<std::vector<double>> F;
+                std::vector<std::vector<float>> V;
+                std::vector<std::vector<float>> F;
                 std::vector<std::vector<int>> N;
                 {
 #if defined(WIN32) || defined(_WIN32)

@@ -8,7 +8,7 @@ struct HitInfo;
 
 struct Sphere {
     Vec3d center;
-    double radius;
+    float radius;
 
     __device__ bool intersect(const Ray &ray, float minT, float maxT, HitInfo &hitInfo) const; 
 };

@@ -38,7 +38,7 @@ struct Light {
     // Outputs:
     //    direction  3D direction from point toward light as a vector.
     //    maxT  parametric distance from q along d to light (may be inf)
-    __device__ void direction(const Vec3d &query, Vec3d &direction, double &maxT) const {
+    __device__ void direction(const Vec3d &query, Vec3d &direction, float &maxT) const {
         switch (type) {
         case LightType::DirectionalLight:
             direction = -data.directional.direction;
