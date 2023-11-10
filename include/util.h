@@ -1,6 +1,8 @@
 #ifndef UTIl_H
 #define UTIl_H
 
+enum class Color { Red, Green, Blue };
+
 /**
  * @brief Send Array of length `num` from Host to Device
  *

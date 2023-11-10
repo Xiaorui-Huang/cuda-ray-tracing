@@ -51,7 +51,7 @@ CTestTestfile.cmake
 _deps
 
 build
-build_release
+build-release
 
 # reference files
 cpp

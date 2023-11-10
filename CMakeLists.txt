@@ -5,16 +5,11 @@ project(raytracing LANGUAGES CUDA CXX)
 # set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Add the include directory
-include_directories("include/")
-# include_directories("includeCpp/") # Header for Geometry Object processing
+include_directories("include")
 
 # Source directory
-set(SRC_DIR "src/")
+set(SRC_DIR "src")
 file(GLOB SRCFILES "${SRC_DIR}/*.cu")
-
-# temporary measures
-# set(SRC_CPP_DIR "srcCpp/") # New source directory for C++ files
-# file(GLOB SRC_CPP_FILES "${SRC_CPP_DIR}/*.cpp")
 
 list(APPEND SRCFILES main.cu)
 list(APPEND SRCFILES ${SRC_CPP_FILES})
@@ -28,20 +23,22 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-# Release build flags
-set(CMAKE_CXX_FLAGS_RELEASE "-O3") # High level of optimization
-set(CMAKE_CUDA_FLAGS_RELEASE "-O3")
+# CUDA compiler flags for Ampere architecture
+set(ARCH_CODE 86)
+set(CMAKE_CUDA_ARCHITECTURES ${ARCH_CODE})
+
+# enable link time optimization (LTO) for release builds
+# https://developer.nvidia.com/blog/improving-gpu-app-performance-with-cuda-11-2-device-lto/
+set(CMAKE_CUDA_FLAGS_RELEASE "-gencode arch=compute_${ARCH_CODE},code=lto_${ARCH_CODE}") 
 
 # Debug build flags
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g") # No optimization, include debug information
-set(CMAKE_CUDA_FLAGS_DEBUG "-G -g") # '-G' for CUDA disables optimizations and '-g' adds debug information
-
-
-# CUDA compiler flags for Ampere architecture
-set(CMAKE_CUDA_ARCHITECTURES 86)
+set(CMAKE_CUDA_FLAGS_DEBUG "--debug --device-debug") # '-G' for CUDA disables optimizations and '-g' adds debug information
 
 # Create the executable
 add_executable(${PROJECT_NAME} ${SRCFILES})
+
+# Enable CUDA separate compilation
+set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # Use FetchContent to add the nlohmann/json library
 include(FetchContent)

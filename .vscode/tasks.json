@@ -19,7 +19,7 @@
         {
             "label": "build release",
             "type": "shell",
-            "command": "mkdir build_release -p && cd build_release && cmake -DCMAKE_BUILD_TYPE=Release .. && make",
+            "command": "mkdir build-release -p && cd build-release && cmake -DCMAKE_BUILD_TYPE=Release .. && make",
             "problemMatcher": [
                 "$nvcc"
             ],

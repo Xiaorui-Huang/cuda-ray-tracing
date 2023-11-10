@@ -37,3 +37,11 @@ Two Blog that give significant insight into the implementation of parallel BVH
 <http://www.kevinbeason.com/smallpt/>
 
 <https://www.pbrt.org/>
+
+### Dynamic Linker
+
+<https://developer.nvidia.com/blog/separate-compilation-linking-cuda-device-code/>
+
+<https://forums.developer.nvidia.com/t/the-cost-of-relocatable-device-code-rdc-true/47665/12>
+
+<https://developer.nvidia.com/blog/improving-gpu-app-performance-with-cuda-11-2-device-lto/>

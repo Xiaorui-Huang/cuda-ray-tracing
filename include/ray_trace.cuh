@@ -1,21 +1,23 @@
 #ifndef RAY_TRACE_CUH
 #define RAY_TRACE_CUH
 
-#include "Object.cuh"
 #include "Light.cuh"
+#include "Object.cuh"
 #include "generate_ray.cuh"
+
+#include "util.h"
 
 /**
  * @brief Ray Trace an image given the Scene
- * 
- * @param camera 
- * @param objects 
- * @param num_objects 
- * @param lights 
- * @param num_lights 
- * @param width 
- * @param height 
- * @param image 
+ *
+ * @param camera
+ * @param objects
+ * @param num_objects
+ * @param lights
+ * @param num_lights
+ * @param width
+ * @param height
+ * @param image
  */
 __global__ void ray_trace_kernel(const Camera &camera,
                                  const Object *objects,
@@ -31,11 +33,19 @@ __global__ void ray_trace_kernel(const Camera &camera,
     if (col < width && row < height) {
 
         Ray ray;
-        generate_ray(camera, row, col, width, height, ray);
-        
-        float3d rgb;
-        // ray_color(ray, objects, num_objects, lights, num_lights, image, row, col, width, height, rgb);
+        // generate_ray(camera, row, col, width, height, ray);
+        generate_ray();
+
+        // float3d rgb;
+        // ray_color(ray, objects, num_objects, lights, num_lights, image, row, col, width, height,
+        // rgb);
+        // auto clamp = [](float x) { return x < 0 ? 0 : x > 1 ? 1 : x; };
+
+        // image[row * width * 3 + col * 3 + (int)Color::Red] = clamp(rgb.x()) * 255.0;
+        // image[row * width * 3 + col * 3 + (int)Color::Green] = clamp(rgb.x()) * 255.0;
+        // image[row * width * 3 + col * 3 + (int)Color::Blue] = clamp(rgb.x()) * 255.0;
     }
 }
+
 
 #endif

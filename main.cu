@@ -13,6 +13,7 @@
 #include "Float3d.cuh"
 #include "read_json.h"
 #include "write_ppm.h"
+#include "ray_trace.cuh"
 
 #include <cuda_runtime.h>
 
@@ -35,6 +36,8 @@ int main(int argc, char *argv[]) {
     std::vector<Light> lights;
 
     // Read a camera and scene description from given .json file
+    int width = 640;
+    int height = 360;
 
     readJson(argc <= 1 ? "../data/bunny.json" : argv[1], camera, objects, lights, materials);
     // readJson(argc <= 1 ? "../data/inside-a-sphere.json" : argv[1], camera,
@@ -44,6 +47,7 @@ int main(int argc, char *argv[]) {
     Object *d_objects;
     Material *d_materials;
     Light *d_lights;
+    // unsigned char d_rgb_image[3 * width * height];
 
     // send data to GPU
     // very well suited for __constant__ use case, except the data is too large
@@ -60,8 +64,7 @@ int main(int argc, char *argv[]) {
     // kernel test func
     show_material<<<1, materials.size()>>>(d_materials);
 
-    int width = 1920;
-    int height = 1080;
+
     std::vector<unsigned char> rgb_image(3 * width * height);
 
     // For each pixel (i,j)
