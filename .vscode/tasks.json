@@ -43,14 +43,38 @@
         {
             "label": "build current file",
             "type": "shell",
-            "command": "nvcc ${file} -o ${fileDirname}/${fileBasenameNoExtension} -g",
+            "command": "nvcc ${file} -o ${fileDirname}/${fileBasenameNoExtension} -g -G",
             "problemMatcher": [
                 "$nvcc"
             ],
             "group": {
                 "kind": "build",
-                "isDefault": false
+                "isDefault": true
             }
+        },
+        {
+            "label": "build dynamic parallel current",
+            "type": "shell",
+            "command": "cd ${fileDirname} && nvcc -arch=sm_86 -rdc=true -c -o ${fileBasenameNoExtension}.o ${fileBasenameNoExtension}.cu -g -G && nvcc -arch=sm_86 -o ${fileBasenameNoExtension} ${fileBasenameNoExtension}.o -g -G",
+            "problemMatcher": [
+                "$nvcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+        },
+        {
+            "label": "build dynamic parallel current release",
+            "type": "shell",
+            "command": "cd ${fileDirname} && nvcc -arch=sm_86 -rdc=true -c -o ${fileBasenameNoExtension}.o ${fileBasenameNoExtension}.cu -O3 && nvcc -arch=sm_86 -o ${fileBasenameNoExtension} ${fileBasenameNoExtension}.o -O3",
+            "problemMatcher": [
+                "$nvcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
         }
     ]
 }

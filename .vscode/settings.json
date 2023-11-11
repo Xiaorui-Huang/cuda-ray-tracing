@@ -58,7 +58,8 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "cassert": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "chrono": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled",
     "C_Cpp.clang_format_fallbackStyle": "LLVM",

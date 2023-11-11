@@ -63,6 +63,18 @@ struct Object {
         bounding_box = AABB(min_bounds, max_bounds);
     }
 
+    /**
+     * @brief Test if a ray intersects with `this` object. 
+     * 
+     * `n` and `t` are only set if the ray intersects with the object.
+     * 
+     * @param ray the ray to test for intersection
+     * @param min_t the minimum distance to consider for intersection 
+     * @param max_t the maximum distance to consider for intersection 
+     * @param t - `Output` parameter for the distance to the point of intersection 
+     * @param n - `Output` unit normal vector to the point of intersection
+     * @return __device__ 
+     */
     __device__ bool intersect(const Ray &ray, const float min_t, const float max_t, float &t, float3d &n) const {
         if (!bounding_box.intersect(ray, min_t, max_t, t, n)) {
             return false; // Bounding box check first for early exit

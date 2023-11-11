@@ -53,3 +53,7 @@ Two Blog that give significant insight into the implementation of parallel BVH
 ### Dynamic Parallelism
 
 <https://developer.nvidia.com/blog/introduction-cuda-dynamic-parallelism/>
+
+### Unified Memory
+
+<https://developer.nvidia.com/blog/unified-memory-cuda-beginners/>

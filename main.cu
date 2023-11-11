@@ -62,53 +62,32 @@ int main(int argc, char *argv[]) {
                      materials.size() * sizeof(Material) + lights.size() * sizeof(Light)
               << std::endl;
 
-    // kernel test func
-    show_material<<<1, materials.size()>>>(d_materials);
-
-    auto err = cudaGetLastError();
-    if (err != cudaSuccess)
-        std::cout << "CUDA Error Show Material: " << cudaGetErrorString(err) << std::endl;
-
     dim3 block_per_grid(N, N);
     // To ensure all pixels are processed, we round up the number of blocks (reduces occupancy - i.e. empty threads)
-    // Note: int/int = int, so we need to cast to float before division
-    dim3 thread_per_block(std::ceil((float)width / block_per_grid.x),
-                          std::ceil((float)height / block_per_grid.y));
+    dim3 thread_per_block(ceil(width / block_per_grid.x), ceil(height / block_per_grid.y));
 
-    // dim3 thread_per_block((width + block_per_grid.x - 1) / block_per_grid.x,
-    //                       (height + block_per_grid.y - 1) / block_per_grid.y);
+    // Dynamic parallelism - prepare child kernel
+    Ray *d_rays;
+    HitInfo *d_hit_infos;
+    cudaMalloc(&d_rays, width * height * sizeof(Ray));
+    cudaMalloc(&d_hit_infos, width * height * sizeof(HitInfo));
 
-    ray_trace_kernel<<<block_per_grid, thread_per_block>>>(
-        *d_camera, d_objects, objects.size(), d_lights, lights.size(), width, height, d_rgb_image);
-    err = cudaGetLastError();
+    ray_trace_kernel<<<block_per_grid, thread_per_block>>>(*d_camera,
+                                                           d_objects,
+                                                           objects.size(),
+                                                           d_lights,
+                                                           lights.size(),
+                                                           width,
+                                                           height,
+                                                           d_rays,
+                                                           d_hit_infos,
+                                                           d_rgb_image);
+
+    auto err = cudaGetLastError();
     if (err != cudaSuccess)
         std::cout << "CUDA Error Ray Trace: " << cudaGetErrorString(err) << std::endl;
 
     cudaMemcpy(h_rgb_image.data(), d_rgb_image, image_size, cudaMemcpyDeviceToHost);
-
-    // // For each pixel (i,j)
-    // for (unsigned i = 0; i < height; ++i) {
-    //     // std::cout << std::fixed << std::setprecision(2);
-    //     // std::cout << "\rprogress: " << (double)i * 100 / height << "%" << std::flush;
-    //     for (unsigned j = 0; j < width; ++j) {
-    //         // Set background color
-    //         float3d rgb(0, 0, 0);
-
-    //         // Compute viewing ray
-    //         // Ray ray;
-    //         // generate_ray(camera, i, j, width, height, ray);
-
-    //         // Shoot ray and collect color
-    //         // raycolor(ray, 1.0, objects, lights, 0, rgb);
-
-    //         // Write double precision color into image
-    //         auto clamp = [](double s) -> double { return std::max(std::min(s, 1.0), 0.0); };
-    //         h_rgb_image[0 + 3 * (j + width * i)] = 255.0 * clamp(rgb(0));
-    //         h_rgb_image[1 + 3 * (j + width * i)] = 255.0 * clamp(rgb(1));
-    //         h_rgb_image[2 + 3 * (j + width * i)] = 255.0 * clamp(rgb(2));
-    //     }
-    // }
-    // std::cout << std::endl;
 
     std::cout << "Writing image to rgb.ppm" << std::endl;
     write_ppm("rgb.ppm", h_rgb_image, width, height, 3);

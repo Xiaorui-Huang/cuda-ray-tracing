@@ -35,7 +35,7 @@ set(CMAKE_CUDA_FLAGS_RELEASE "-gencode arch=compute_${ARCH_CODE},code=lto_${ARCH
 set(CMAKE_CUDA_FLAGS_DEBUG "--debug --device-debug") # '-G' for CUDA disables optimizations and '-g' adds debug information
 
 # enable dynamic parallelism
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -rdc=true -lcudadevrt")
+# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -rdc=true -lcudadevrt")
 
 # Create the executable
 add_executable(${PROJECT_NAME} ${SRCFILES})

@@ -1,9 +1,9 @@
 #ifndef FLOAT3D_CUH
 #define FLOAT3D_CUH
 
-#include <cmath> 
+#include <cmath>
 
-class float3d{
+class float3d {
   private:
     float data[3];
 
@@ -42,15 +42,14 @@ class float3d{
     }
 
     /// Unary minus
-    __host__ __device__ inline float3d operator-() const { 
-        return float3d(-data[0], -data[1], -data[2]); 
+    __host__ __device__ inline float3d operator-() const {
+        return float3d(-data[0], -data[1], -data[2]);
     }
 
     // Scalar multiplication
     __host__ __device__ inline float3d operator*(float scalar) const {
         return float3d(x() * scalar, y() * scalar, z() * scalar);
     }
-
 
     // Element-wise multiplication
     __host__ __device__ inline float3d operator*(const float3d &other) const {
@@ -70,8 +69,9 @@ class float3d{
 
     // Cross product
     __host__ __device__ inline float3d cross(const float3d &other) const {
-        return float3d(y() * other.z() - z() * other.y(), z() * other.x() - x() * other.z(),
-                     x() * other.y() - y() * other.x());
+        return float3d(y() * other.z() - z() * other.y(),
+                       z() * other.x() - x() * other.z(),
+                       x() * other.y() - y() * other.x());
     }
 
     __host__ __device__ inline float norm() const { return sqrt(dot(*this)); }
@@ -80,7 +80,6 @@ class float3d{
 
     __host__ __device__ inline void normalize() { (*this) = (*this) / norm(); }
 };
-
 
 __host__ __device__ inline float3d operator*(float scalar, const float3d &vec) {
     return vec * scalar;

@@ -59,5 +59,12 @@
             "program": "${fileDirname}/${fileBasenameNoExtension}",
             "preLaunchTask": "build current file",
         },
+        {
+            "name": "CUDA Link Current",
+            "type": "cuda-gdb",
+            "request": "launch",
+            "program": "${fileDirname}/${fileBasenameNoExtension}",
+            "preLaunchTask": "build dynamic parallel current",
+        },
     ]
 }

@@ -2,7 +2,7 @@
 #define TRIANGLE_CUH
 
 #include "Float3d.cuh"
-#include "util.h"
+#include "util.cuh"
 
 struct Ray;
 struct HitInfo;

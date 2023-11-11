@@ -1,5 +1,8 @@
-#ifndef UTIl_H
-#define UTIl_H
+#ifndef UTIl_CUH
+#define UTIl_CUH
+
+#include <stdexcept>
+#include <string>
 
 enum class Color { Red, Green, Blue };
 
@@ -31,4 +34,9 @@ template <typename T> __device__ inline T min(T a, T b) { return a < b ? a : b; 
 
 template <typename T> __device__ inline T max(T a, T b) { return a < b ? b : a; }
 
+template <typename T> __device__ inline T ceil(T a, T b) { return (a + b - 1) / b; }
+
+__device__ inline bool is_close(float a, float b, float tolerance = 1e-6f) {
+    return fabsf(a - b) <= tolerance;
+}
 #endif

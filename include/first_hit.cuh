@@ -7,7 +7,51 @@
 #include "Ray.h"
 
 /**
- * @brief Find the first object that the ray intersects with. Uses reduction algorithm.
+ * @brief Find the first object that the ray intersects with. 
+ * 
+ * @param ray The ray to be tested
+ * @param objects The array of objects in the scene 
+ * @param num_objects Number of objects in the scene
+ * @param min_t The minimum t value that the ray can have
+ * @param max_t The maximum t value that the ray can have
+ * @param hit_info - `Output`
+ * @return true if ray intersects with any object, else false
+ */
+__device__ bool first_hit(const Ray &ray,
+                          const Object *objects,
+                          const size_t num_objects,
+                          const float min_t,
+                          const float max_t,
+                          HitInfo &hit_info) {
+
+    float smallest_t = INFINITY, furthest_t = -INFINITY;
+    float cur_t;
+    float3d cur_n;
+    bool found = false;
+
+    for (size_t i = 0; i < num_objects; i++) {
+        if (objects[i].intersect(ray, min_t, max_t, cur_t, cur_n)) {
+            found = true;
+            if (cur_t < smallest_t) {
+                smallest_t = cur_t;
+                hit_info.normal = cur_n;
+                hit_info.object_id = i;
+            }
+            if (cur_t > furthest_t)
+                furthest_t = cur_t;
+        }
+    }
+
+    if (found) {
+        hit_info.t_near = smallest_t;
+        hit_info.t_far = furthest_t;
+    }
+
+    return found;
+}
+
+/**
+ * @brief Kernel to find the first object that the ray intersects with. Uses reduction algorithm.
  * 
  * Should be called with `n/2` threads, where `n` is the number of objects.
  * i.e. 1D grid of 1D blocks. there grid size is halved
@@ -15,7 +59,7 @@
  * See reduce3 
  * https://github.com/NVIDIA/cuda-samples/tree/master/Samples/2_Concepts_and_Techniques/reduction
  * 
- * @param ray - `Input`
+ * @param ray 
  * @param objects 
  * @param min_t 
  * @param max_t 
@@ -27,7 +71,7 @@ __global__ void first_hit(const Ray &ray,
                           const size_t num_objects,
                           const float min_t,
                           const float max_t,
-                          HitInfo &hit_info) {
+                          HitInfo *hit_info) {
 
     extern __shared__ HitInfo shared[];
     // HitInfo *shared_max = shared + blockDim.x;
@@ -38,19 +82,19 @@ __global__ void first_hit(const Ray &ray,
     int tid = threadIdx.x;
 
     // HitInfo intialization
-    // float t;
-    // float3d n;
-    // int hit_id;
+    float t;
+    float3d n;
+    int hit_id;
 
-    float t = 1.0;
-    float3d n = float3d();
-    int hit_id = -1;
+    // float t = 1.0;
+    // float3d n = float3d();
+    // int hit_id = -1;
 
     // thread guard
     if (i < num_objects) {
         // create and assign data (This is where the algorithm is parallellized)
 
-        // hit_id = objects[i].intersect(ray, min_t, max_t, t, n) ? i : -1;
+        hit_id = objects[i].intersect(ray, min_t, max_t, t, n) ? i : -1;
 
         shared[tid] =
             (hit_id != -1) ? HitInfo(t, t, n, hit_id) : HitInfo(INFINITY, -INFINITY, float3d(), -1);
@@ -72,8 +116,9 @@ __global__ void first_hit(const Ray &ray,
             }
         }
 
+        // store the current block's result in global memory
         if (tid == 0)
-            hit_info = shared[0];
+            hit_info[blockIdx.x] = shared[0];
     }
 }
 

@@ -3,4 +3,7 @@ IndentWidth: 4
 ColumnLimit: 100
 AlignAfterOpenBracket: Align
 BinPackParameters: false
+BinPackArguments: false
+BinPackBracedInitList: false
+AllowAllParametersOfDeclarationOnNextLine: false
 ReflowComments: false
