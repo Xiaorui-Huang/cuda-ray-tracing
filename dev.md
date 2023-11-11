@@ -38,6 +38,8 @@ Two Blog that give significant insight into the implementation of parallel BVH
 
 <https://www.pbrt.org/>
 
+<https://developer.nvidia.com/blog/how-query-device-properties-and-handle-errors-cuda-cc/>
+
 ### Dynamic Linker
 
 <https://developer.nvidia.com/blog/separate-compilation-linking-cuda-device-code/>

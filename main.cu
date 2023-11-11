@@ -32,8 +32,8 @@ int main(int argc, char *argv[]) {
     std::vector<Light> lights;
 
     // Read a camera and scene description from given .json file
-    int width = 640;
-    int height = 360;
+    unsigned int width = 640;
+    unsigned int height = 360;
 
     readJson(argc <= 1 ? "../data/bunny.json" : argv[1], camera, objects, lights, materials);
     // readJson(argc <= 1 ? "../data/inside-a-sphere.json" : argv[1], camera, objects, lights, materials);
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 
     dim3 block_per_grid(N, N);
     // To ensure all pixels are processed, we round up the number of blocks (reduces occupancy - i.e. empty threads)
-    dim3 thread_per_block(ceil(width / block_per_grid.x), ceil(height / block_per_grid.y));
+    dim3 thread_per_block(ceil(width, block_per_grid.x), ceil(height, block_per_grid.y));
 
     // Dynamic parallelism - prepare child kernel
     Ray *d_rays;
@@ -72,6 +72,8 @@ int main(int argc, char *argv[]) {
     cudaMalloc(&d_rays, width * height * sizeof(Ray));
     cudaMalloc(&d_hit_infos, width * height * sizeof(HitInfo));
 
+    // note: we use serial device code for first hit as draft,
+    // d_rays and d_hit_infos are not used in this kernel currently
     ray_trace_kernel<<<block_per_grid, thread_per_block>>>(*d_camera,
                                                            d_objects,
                                                            objects.size(),

@@ -76,9 +76,10 @@ struct Object {
      * @return __device__ 
      */
     __device__ bool intersect(const Ray &ray, const float min_t, const float max_t, float &t, float3d &n) const {
-        if (!bounding_box.intersect(ray, min_t, max_t, t, n)) {
-            return false; // Bounding box check first for early exit
-        }
+        // we did not implement BVH yet, so we ignore this
+        // if (!bounding_box.intersect(ray, min_t, max_t, t, n)) {
+        //     return false; // Bounding box check first for early exit
+        // }
 
         // Object-specific intersection
         switch (type) {

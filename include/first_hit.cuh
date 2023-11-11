@@ -9,7 +9,7 @@
 /**
  * @brief Find the first object that the ray intersects with. 
  * 
- * @param ray The ray to be tested
+ * @param ray 
  * @param objects The array of objects in the scene 
  * @param num_objects Number of objects in the scene
  * @param min_t The minimum t value that the ray can have

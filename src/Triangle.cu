@@ -24,18 +24,19 @@ __device__ bool Triangle::intersect(const Ray &ray,
     float3d d = ray.direction;
     float3d e = ray.origin;
 
+    // Matrix determinant explanation:
     // A = | a  b  c |
     //     | d  e  f |
     //     | g  h  i |
-
-    // Note: can use column or row vectors
+    //
     // v1 = [a, b, c]
     // v2 = [d, e, f]
     // v3 = [g, h, i]
-
-    // det(A) = v1.(v2 x v3)
-
+    //
+    // det(A) = v1 . (v2 x v3)
+    // Here, v1 = a_b, v2 = a_c, v3 = d (ray direction)
     // Compute normal to the plane of the triangle
+
     float3d plane_normal = d.cross(a_c);
     float det = a_b.dot(plane_normal);
 
@@ -48,7 +49,12 @@ __device__ bool Triangle::intersect(const Ray &ray,
     // Calculate distance from vertex a to ray origin
     float3d a_e = e - a;
 
-    // Calculate u parameter and test bound
+    // Calculate u parameter using dot product
+    // The u_parameter is a barycentric coordinate, representing the intersection point's
+    // position relative to triangle's edge AB. The dot product of vector a_e (from vertex A to ray origin)
+    // and plane_normal (perpendicular to the triangle) measures the projection of a_e onto the plane normal.
+    // This projection, scaled by the inverse determinant (inv_det), correlates to the barycentric coordinate u.
+    // If u is not between 0 and 1, the intersection point is outside the triangle.
     float u_parameter = a_e.dot(plane_normal) * inv_det;
     if (u_parameter < 0.0f || u_parameter > 1.0f)
         return false;
