@@ -32,7 +32,8 @@ struct Triangle {
         return corner;
     }
 
-    __device__ bool intersect(const Ray &ray, float min_t, float max_t, HitInfo &hit_info) const;
+    __device__ bool
+    intersect(const Ray &ray, const float min_t, const float max_t, float &t, float3d &n) const;
 };
 
 #endif

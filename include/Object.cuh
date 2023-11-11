@@ -63,23 +63,54 @@ struct Object {
         bounding_box = AABB(min_bounds, max_bounds);
     }
 
-    __device__ bool intersect(const Ray &ray, float min_t, float max_t, HitInfo &hit_info) const {
-        if (!bounding_box.intersect(ray, min_t, max_t, hit_info)) {
+    __device__ bool intersect(const Ray &ray, const float min_t, const float max_t, float &t, float3d &n) const {
+        if (!bounding_box.intersect(ray, min_t, max_t, t, n)) {
             return false; // Bounding box check first for early exit
         }
 
         // Object-specific intersection
         switch (type) {
         case ObjectType::Plane:
-            return data.plane.intersect(ray, min_t, max_t, hit_info);
+            return data.plane.intersect(ray, min_t, max_t, t, n);
         case ObjectType::Sphere:
-            return data.sphere.intersect(ray, min_t, max_t, hit_info);
+            return data.sphere.intersect(ray, min_t, max_t, t, n);
         case ObjectType::Triangle:
-            return data.triangle.intersect(ray, min_t, max_t, hit_info);
+            return data.triangle.intersect(ray, min_t, max_t, t, n);
         default:
             return false; // Unrecognized object type
         }
     }
 };
+
+/*
+   Use case for max_t
+
+Shadow Rays:
+
+In ray tracing, shadow rays are cast from the point of intersection to each
+light source to determine visibility (i.e., whether the point is in shadow). If
+an intersection with another object occurs at a distance less than the distance
+to the light source, the point is in shadow. Here, max_t would be set to the
+distance to the light source. Any intersection beyond this distance is
+irrelevant for shadow calculation.
+
+   Depth of Field and Focus:
+
+For simulating depth of field, intersections might only be considered within a
+certain range of distances from the camera that align with the camera's focus.
+Here, max_t can define the far limit of this in-focus range. Optimization in
+Scene Hierarchy Traversal:
+
+In spatial data structures like BVH (Bounding Volume Hierarchies) or Octrees
+used for efficient ray tracing, max_t can be used to skip entire sections of the
+hierarchy. If the closest intersection found so far is closer than max_t, any
+node or bounding volume further than max_t can be safely ignored. Reflection and
+Refraction Rays:
+
+For reflection and refraction rays, max_t can limit how far these rays travel,
+which can be used to simulate effects like reflective or refractive surfaces
+fading out over distance.
+
+*/
 
 #endif

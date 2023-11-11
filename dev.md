@@ -45,3 +45,11 @@ Two Blog that give significant insight into the implementation of parallel BVH
 <https://forums.developer.nvidia.com/t/the-cost-of-relocatable-device-code-rdc-true/47665/12>
 
 <https://developer.nvidia.com/blog/improving-gpu-app-performance-with-cuda-11-2-device-lto/>
+
+### CUDA Feature Availability
+
+<https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#feature-availability>
+
+### Dynamic Parallelism
+
+<https://developer.nvidia.com/blog/introduction-cuda-dynamic-parallelism/>

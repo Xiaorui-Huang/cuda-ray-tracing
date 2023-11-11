@@ -20,8 +20,8 @@
             "name": "(cuda-gdb) Launch release",
             "type": "cuda-gdb",
             "request": "launch",
-            "program": "${workspaceFolder}/build_release/raytracing",
-            "cwd": "${workspaceFolder}/build_release",
+            "program": "${workspaceFolder}/build-release/raytracing",
+            "cwd": "${workspaceFolder}/build-release",
             "preLaunchTask": "build release",
             "presentation": {
                 "group": "Ray Tracing",

@@ -32,6 +32,15 @@
             }
         },
         {
+            "label": "run release",
+            "type": "shell",
+            "command": "cd build-release && make && ${workspaceFolder}/build-release/raytracing",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+        },
+        {
             "label": "build current file",
             "type": "shell",
             "command": "nvcc ${file} -o ${fileDirname}/${fileBasenameNoExtension} -g",

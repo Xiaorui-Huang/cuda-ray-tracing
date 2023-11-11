@@ -9,9 +9,9 @@ enum class Color { Red, Green, Blue };
  * @tparam T Type of Array
  * @param d_ptr Pointer to Device Array
  * @param h_ptr Pointer to Host Array
- * @param num
+ * @param num Length of Array
  */
-template <typename T> inline void to_cuda(T *&d_ptr, T *h_ptr, size_t num = 1) {
+template <typename T> inline void to_cuda(T *&d_ptr, const T *h_ptr, size_t num = 1) {
     // Allocate memory on the GPU
     cudaError_t err = cudaMalloc(&d_ptr, sizeof(T) * num);
     if (err != cudaSuccess)
