@@ -2,7 +2,7 @@
 #include "Ray.h"
 
 /**
- * @brief Plane intersection test - see Object::intersect()
+ * @brief Plane intersection test - see [[include/Object.cuh]]::intersect()
  */
 __device__ bool
 Plane::intersect(const Ray &ray, const float min_t, const float max_t, float &t, float3d &n) const {

@@ -42,6 +42,20 @@ struct RayState {
     float3d km;
 };
 
+/**
+ * @brief Calculate the color of a ray
+ * 
+ * @param ray The ray to calculate the color of
+ * @param min_t The minimum t value to consider
+ * @param max_t The maximum t value to consider
+ * @param objects The objects in the scene
+ * @param num_objects 
+ * @param lights The lights in the scene
+ * @param num_lights 
+ * @param materials The materials in the scene
+ * @param num_materials 
+ * @return float3d The color of the ray
+ */
 __device__ float3d ray_color(const Ray &ray,
                              const float min_t,
                              const float max_t,

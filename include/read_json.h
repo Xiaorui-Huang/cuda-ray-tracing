@@ -33,14 +33,16 @@ struct Light;
 // for convenience
 using json = nlohmann::json;
 
-// Read a scene description from a .json file
-//
-// Input:
-//   filename  path to .json file
-// Output:
-//   camera  camera looking at the scene
-//   objects  list of shared pointers to objects
-//   lights  list of shared pointers to lights
+/**
+ * @brief Read a scene description from a .json file
+ * 
+ * @param filename path to .json file
+ * @param camera `Output` camera looking at the scene
+ * @param objects `Output` list of objects
+ * @param lights `Output` list of lights
+ * @param materials `Output` list of materials
+ * @return true if json file was read successfully
+ */
 inline bool readJson(const std::string &filename,
                      Camera &camera,
                      std::vector<Object> &objects,

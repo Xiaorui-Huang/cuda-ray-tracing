@@ -3,7 +3,7 @@
 #include "util.cuh"
 
 /**
- * @brief Sphere intersection test - see Object::intersect()
+ * @brief Sphere intersection test - see [[include/Object.cuh]]::intersect()
  */
 __device__ bool Sphere::intersect(const Ray &ray,
                                   const float min_t,

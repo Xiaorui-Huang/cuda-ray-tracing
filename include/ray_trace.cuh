@@ -14,17 +14,16 @@
 /**
  * @brief Ray trace an image given the Scene
  * 
- * 
- * @param camera 
- * @param objects 
+ * @param camera The camera to use for ray generation
+ * @param objects The objects in the scene
  * @param num_objects 
- * @param lights 
+ * @param lights The lights in the scene
  * @param num_lights 
- * @param materials
+ * @param materials The materials of the objects in the scene
  * @param num_materials
- * @param width 
- * @param height 
- * @param image - `Output`
+ * @param width The width of the image in pixels
+ * @param height The height of the image in pixels
+ * @param image - `Output` The image buffer to write to
  */
 __global__ void ray_trace_kernel(const Camera &camera,
                                  const Object *objects,

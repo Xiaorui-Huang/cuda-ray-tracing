@@ -17,6 +17,18 @@
 //   height  image height (i.e., number of rows)
 //   num_channels  number of channels (e.g., for rgb 3, for grayscale 1)
 // Returns true on success, false on failure (e.g., can't open file)
+// 
+
+/**
+ * @brief Write an rgb or grayscale image to a .ppm file.
+ * 
+ * @param filename path to .ppm file as string
+ * @param data data  width*heigh*num_channels array of image intensity data
+ * @param width  image width (i.e., number of columns)
+ * @param height image height (i.e., number of rows)
+ * @param num_channels number of channels (e.g., for rgb 3, for grayscale 1)
+ * @return true on success, false on failure (e.g., can't open file)
+ */
 bool write_ppm(
   const std::string & filename,
   const std::vector<unsigned char> & data,

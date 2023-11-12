@@ -3,7 +3,7 @@
 #include "util.cuh"
 
 /**
- * @brief Triangle intersection test - see Object::intersect()
+  * @brief Triangle intersection test - see [[include/Object.cuh]]::intersect()
  */
 __device__ bool Triangle::intersect(const Ray &ray,
                                     const float min_t,

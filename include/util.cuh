@@ -4,7 +4,17 @@
 #include <stdexcept>
 #include <string>
 
-//timing macros
+/**
+ * @brief Macro to launch a kernel and measure its execution time
+ * 
+ * @param kernelName Name of the kernel to launch 
+ * @param gridDim Grid dimensions
+ * @param blockDim Block dimensions
+ * @param sharedMemBytes Size of shared memory in bytes
+ * @param stream CUDA stream to use
+ * @param ... Arguments to pass to the kernel
+ * @return Execution time of the kernel in milliseconds (float)
+ */
 #define LaunchTimedKernel(kernelName, gridDim, blockDim, sharedMemBytes, stream, ...)              \
     ([&]() -> float {                                                                              \
         cudaEvent_t start, stop;                                                                   \

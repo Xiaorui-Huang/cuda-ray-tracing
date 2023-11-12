@@ -19,7 +19,6 @@ union ObjectData {
     Triangle triangle;
 };
 
-// Assumes objects, globalTriangleSoup, lights are gloablly variables
 struct Object {
     ObjectData data;
     ObjectType type;
@@ -63,38 +62,43 @@ struct Object {
         bounding_box = AABB(min_bounds, max_bounds);
     }
 
+    
     /**
-     * @brief Test if a ray intersects with `this` object. 
+     * @brief Test if a ray intersects with `this` object. `n` and `t` are only set if the ray intersects with the object.
      * 
-     * `n` and `t` are only set if the ray intersects with the object.
-     * 
-     * @param ray the ray to test for intersection
-     * @param min_t the minimum distance to consider for intersection 
-     * @param max_t the maximum distance to consider for intersection 
-     * @param t - `Output` parameter for the distance to the point of intersection 
-     * @param n - `Output` unit normal vector to the point of intersection
-     * @return __device__ 
+     * @param ray The ray to test for intersection 
+     * @param min_t The minimum distance to consider for intersection
+     * @param max_t The maximum distance to consider for intersection 
+     * @param t `Output` parameter for the distance to the point of intersection
+     * @param n `Output` unit normal vector to the point of intersection 
+     * @return true if the ray intersects with the object, false otherwise
      */
-    __device__ bool intersect(const Ray &ray, const float min_t, const float max_t, float &t, float3d &n) const {
-        // we did not implement BVH yet, so we ignore this
-        // if (!bounding_box.intersect(ray, min_t, max_t, t, n)) {
-        //     return false; // Bounding box check first for early exit
-        // }
-
-        // Object-specific intersection
-        switch (type) {
-        case ObjectType::Plane:
-            return data.plane.intersect(ray, min_t, max_t, t, n);
-        case ObjectType::Sphere:
-            return data.sphere.intersect(ray, min_t, max_t, t, n);
-        case ObjectType::Triangle:
-            return data.triangle.intersect(ray, min_t, max_t, t, n);
-        default:
-            return false; // Unrecognized object type
-        }
-    }
+    __device__ bool
+    intersect(const Ray &ray, const float min_t, const float max_t, float &t, float3d &n) const;
 };
 
+__device__ bool Object::intersect(const Ray &ray,
+                                  const float min_t,
+                                  const float max_t,
+                                  float &t,
+                                  float3d &n) const {
+    // we did not implement BVH yet, so we ignore this
+    // if (!bounding_box.intersect(ray, min_t, max_t, t, n)) {
+    //     return false; // Bounding box check first for early exit
+    // }
+
+    // Object-specific intersection
+    switch (type) {
+    case ObjectType::Plane:
+        return data.plane.intersect(ray, min_t, max_t, t, n);
+    case ObjectType::Sphere:
+        return data.sphere.intersect(ray, min_t, max_t, t, n);
+    case ObjectType::Triangle:
+        return data.triangle.intersect(ray, min_t, max_t, t, n);
+    default:
+        return false; // Unrecognized object type
+    }
+}
 /*
    Use case for max_t
 

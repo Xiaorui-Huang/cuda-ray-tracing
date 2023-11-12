@@ -8,6 +8,7 @@ struct Ray;
 struct HitInfo;
 
 struct Triangle {
+    // The three corners of the triangle
     float3d corners[3];
 
     __host__ __device__ Triangle(float3d a, float3d b, float3d c) : corners{a, b, c} {}
