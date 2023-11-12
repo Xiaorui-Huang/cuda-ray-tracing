@@ -14,42 +14,34 @@
 
 #include "ray_trace.cuh"
 
+#include "argp_util.h"
 #include "read_json.h"
 #include "write_ppm.h"
 
-#include <cuda_runtime.h>
-#define N 32
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
-/**
- * Converts the given position to one which is relative to this context.
- *
- * ```ts
- * let i: number = 1;
- * const a = true;
- * ```
- *
- * @param value The position to convert.
- *
- * @returns The position in local space.
- */
-__global__ void show_material(Material *d_materials) {
-    int i = blockDim.x * blockIdx.x + threadIdx.x;
-    printf("Material: %f\n", d_materials[i].phong_exponent);
-}
+#include <cuda_runtime.h>
 
 int main(int argc, char *argv[]) {
+    // arguments and default see [[include/argp_util.h]] - commentLinks extension
+    arguments args;
+
+    argp_parse(&argp, argc, argv, 0, 0, &args);
+
+    // host data
     Camera camera;
     std::vector<Object> objects;
     std::vector<Material> materials;
     std::vector<Light> lights;
 
     // Read a camera and scene description from given .json file
-    unsigned int width = 640;
-    unsigned int height = 360;
+    readJson(args.filename, camera, objects, lights, materials);
+    // usually it's 16:9 -> 1.77777778f
+    unsigned int width = args.resolution * camera.width / camera.height;
+    unsigned int height = args.resolution;
 
-    readJson(argc <= 1 ? "../data/bunny.json" : argv[1], camera, objects, lights, materials);
-    // readJson(argc <= 1 ? "../data/inside-a-sphere.json" : argv[1], camera, objects, lights, materials);
-
+    //device data
     std::vector<unsigned char> h_rgb_image(3 * width * height);
     size_t image_size = h_rgb_image.size() * sizeof(unsigned char);
 
@@ -69,47 +61,72 @@ int main(int argc, char *argv[]) {
     // https: //docs.nvidia.com/cuda/cuda-c-programming-guide/index.html?highlight=cudaMallocPitched#device-memory
     cudaMalloc(&d_rgb_image, image_size);
 
-    std::cout << "Memory Cost: "
-              << sizeof(Camera) + objects.size() * sizeof(Object) +
-                     materials.size() * sizeof(Material) + lights.size() * sizeof(Light)
-              << std::endl;
+    size_t scene_size = sizeof(Camera) + objects.size() * sizeof(Object) +
+                        materials.size() * sizeof(Material) + lights.size() * sizeof(Light);
 
-    dim3 block_per_grid(N, N);
-    // To ensure all pixels are processed, we round up the number of blocks (reduces occupancy - i.e. empty threads)
+    dim3 block_per_grid(args.blocksize, args.blocksize);
     dim3 thread_per_block(ceil(width, block_per_grid.x), ceil(height, block_per_grid.y));
+    // To ensure all pixels are processed, we round up the number of blocks (although it reduces occupancy - i.e. empty threads)
 
-    // Dynamic parallelism - prepare child kernel
-    Ray *d_rays;
-    HitInfo *d_hit_infos;
-    cudaMalloc(&d_rays, width * height * sizeof(Ray));
-    cudaMalloc(&d_hit_infos, width * height * sizeof(HitInfo));
+    // Dynamic parallelism - prepare child kernel (Doesn't work - no child and parent grid sync)
+    // Malloc for child grid memory
+    // Ray *d_rays; HitInfo *d_hit_infos; cudaMalloc(&d_rays, width * height * sizeof(Ray)); cudaMalloc(&d_hit_infos, width * height * sizeof(HitInfo));
 
-    // note: we use serial device code for first hit as draft,
-    // d_rays and d_hit_infos are not used in this kernel currently
-    ray_trace_kernel<<<block_per_grid, thread_per_block>>>(*d_camera,
-                                                           d_objects,
-                                                           objects.size(),
-                                                           d_lights,
-                                                           lights.size(),
-                                                           d_materials,
-                                                           materials.size(),
-                                                           width,
-                                                           height,
-                                                           d_rays,
-                                                           d_hit_infos,
-                                                           d_rgb_image);
+    // // Vanilla Kernel launch
+    // ray_trace_kernel<<<block_per_grid, thread_per_block>>>(*d_camera, d_objects, objects.size(), d_lights, lights.size(), d_materials, materials.size(), width, height, d_rgb_image);
+
+    // clang-format off
+    const int label_width = 15;
+    std::cout << std::fixed << std::setprecision(4);
+    std::cout << std::left << std::setw(label_width) << "Resolution:" << width << " x " << height << std::endl;
+    std::cout << std::left << std::setw(label_width) << "Block size:" << args.blocksize << " x " << args.blocksize << std::endl;
+    std::cout << std::left << std::setw(label_width) << "Grid size:" << thread_per_block.x << " x " << thread_per_block.y << std::endl;
+    // clang-format on
+    // use timed wrapped kernel launch
+    float milliseconds = LaunchTimedKernel(ray_trace_kernel,
+                                           block_per_grid,
+                                           thread_per_block,
+                                           0,
+                                           0,
+                                           *d_camera,
+                                           d_objects,
+                                           objects.size(),
+                                           d_lights,
+                                           lights.size(),
+                                           d_materials,
+                                           materials.size(),
+                                           width,
+                                           height,
+                                           d_rgb_image);
 
     auto err = cudaGetLastError();
-    if (err != cudaSuccess)
+    if (err != cudaSuccess) {
         std::cout << "CUDA Error Ray Trace: " << cudaGetErrorString(err) << std::endl;
+        std::cout << "Try to increase block size" << std::endl;
+        exit(1);
+    }
+    // clang-format off
+    std::cout << std::left << std::setw(label_width) << "Time:" << milliseconds << " ms" << std::endl;
+    std::cout << std::left << std::setw(label_width) << "Throughput:" << width * height / milliseconds / 1000 << " M rays/s" << std::endl;
+    std::cout << std::left << std::setw(label_width) << "FPS:" << 1000 / milliseconds << " fps" << std::endl;
+    std::cout << std::left << std::setw(label_width) << "Scene size:" << scene_size << " bytes" << std::endl;
+    // clang-format on
 
     cudaMemcpy(h_rgb_image.data(), d_rgb_image, image_size, cudaMemcpyDeviceToHost);
 
-    std::cout << "Writing image to rgb.ppm" << std::endl;
-    write_ppm("rgb.ppm", h_rgb_image, width, height, 3);
+    // write to ppm
+    if (args.ppm) {
+        std::cout << std::endl << "Writing image to rgb.ppm" << std::endl;
+        write_ppm("rgb.ppm", h_rgb_image, width, height, 3);
+    } else {
+        // write to png
+        std::cout << std::endl << "Writing image to rgb.png" << std::endl;
+        stbi_write_png("rgb.png", width, height, 3, h_rgb_image.data(), width * 3);
+    }
 
     cudaFree(d_camera);
     cudaFree(d_objects);
     cudaFree(d_materials);
     cudaFree(d_lights);
+    cudaFree(d_rgb_image);
 }

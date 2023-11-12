@@ -59,7 +59,11 @@
         "valarray": "cpp",
         "cassert": "cpp",
         "ranges": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "any": "cpp",
+        "codecvt": "cpp",
+        "optional": "cpp",
+        "ratio": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled",
     "C_Cpp.clang_format_fallbackStyle": "LLVM",

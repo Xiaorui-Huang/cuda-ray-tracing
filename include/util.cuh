@@ -4,6 +4,31 @@
 #include <stdexcept>
 #include <string>
 
+//timing macros
+#define LaunchTimedKernel(kernelName, gridDim, blockDim, sharedMemBytes, stream, ...)              \
+    ([&]() -> float {                                                                              \
+        cudaEvent_t start, stop;                                                                   \
+        float milliseconds = 0;                                                                    \
+                                                                                                   \
+        cudaEventCreate(&start);                                                                   \
+        cudaEventCreate(&stop);                                                                    \
+                                                                                                   \
+        cudaEventRecord(start, stream);                                                            \
+                                                                                                   \
+        kernelName<<<gridDim, blockDim, sharedMemBytes, stream>>>(__VA_ARGS__);                    \
+                                                                                                   \
+        cudaEventRecord(stop, stream);                                                             \
+                                                                                                   \
+        cudaDeviceSynchronize();                                                                   \
+                                                                                                   \
+        cudaEventElapsedTime(&milliseconds, start, stop);                                          \
+                                                                                                   \
+        cudaEventDestroy(start);                                                                   \
+        cudaEventDestroy(stop);                                                                    \
+                                                                                                   \
+        return milliseconds;                                                                       \
+    })()
+
 enum class Color { Red, Green, Blue };
 
 /**
@@ -39,4 +64,22 @@ template <typename T> __host__ __device__ inline T ceil(T a, T b) { return (a + 
 __device__ inline bool is_close(float a, float b, float tolerance = 1e-6f) {
     return fabsf(a - b) <= tolerance;
 }
+
+// debug only functions
+//release set the NBDEBUG flag -> it is definedo
+// debug does not set the NBDEBUG flag -> it is not defined
+#ifdef DEBUG
+__device__ inline float3d normal_to_rgb(const float3d &normal) { return normal * 0.5f + 0.5f; }
+__device__ inline float3d depth_to_rgb(float t, float zNear, const float3d &ray_direction) {
+    // Linearize the depth value based on the near plane and ray direction
+    double linearized_depth = zNear / (t * ray_direction.norm());
+
+    // Clamp the linearized depth to the range [0, 1]
+    linearized_depth = linearized_depth < 1.0 ? linearized_depth : 1.0;
+
+    // Convert the linearized depth to an RGB value
+    return float3d(linearized_depth);
+}
+#endif
+
 #endif

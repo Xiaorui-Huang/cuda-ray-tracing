@@ -24,8 +24,6 @@
  * @param num_materials
  * @param width 
  * @param height 
- * @param rays - `Memory`
- * @param hit_infos - `Memory`
  * @param image - `Output`
  */
 __global__ void ray_trace_kernel(const Camera &camera,
@@ -37,8 +35,6 @@ __global__ void ray_trace_kernel(const Camera &camera,
                                  const size_t num_materials,
                                  const size_t width,
                                  const size_t height,
-                                 Ray *rays,
-                                 HitInfo *hit_infos,
                                  unsigned char *image) {
 
     int col = blockIdx.x * blockDim.x + threadIdx.x; // Column index, left to right
@@ -52,24 +48,8 @@ __global__ void ray_trace_kernel(const Camera &camera,
 
         HitInfo hit_info;
         if (first_hit(ray, objects, num_objects, 1.0, INFINITY, hit_info)) {
+            //defualt debugging color - any error should get black or mild red image as output
             float3d rgb(0.8, 0.3, 0.2);
-            // float3d rgb(0);
-
-            // int flat_idx = row * width + col;
-            // int grid_size = 16 * 16;
-            // int block_size = (num_objects + grid_size - 1) / grid_size;
-            // first_hit<<<block_size, block_size, sizeof(HitInfo) * block_size>>>(
-            //     rays[flat_idx], objects, num_objects, 1.0, INFINITY, hit_infos);
-            // iterate hit_infos over each block to find the final first hit (in host)
-
-            // if (row == 0) {
-            //     printf("hit info normal: %f %f %f %d %f\n",
-            //            hit_infos[flat_idx].normal.x(),
-            //            hit_infos[flat_idx].normal.y(),
-            //            hit_infos[flat_idx].normal.z(),
-            //            hit_infos[flat_idx].object_index,
-            //            hit_infos[flat_idx].t);
-            // }
 
             // Shoot ray into scene, check for intersection and get color
             rgb = ray_color(ray,
@@ -82,20 +62,11 @@ __global__ void ray_trace_kernel(const Camera &camera,
                             materials,
                             num_materials);
 
-            // // normal image
-            // auto normal_to_rgb = [](const float3d &n, float3d &rgb) {
-            //     rgb.x() = n.x() * 0.5 + 0.5;
-            //     rgb.y() = n.y() * 0.5 + 0.5;
-            //     rgb.z() = n.z() * 0.5 + 0.5;
-            // };
-
-            // normal_to_rgb(hit_info.normal, rgb);
-
-            // // depth image
-            // const float zNear = camera.d;
-            // double linearized_depth = zNear / (hit_info.t * ray.direction.norm());
-            // linearized_depth = linearized_depth < 1 ? linearized_depth : 1;
-            // rgb = float3d(linearized_depth);
+// debug only check for normal and t calculations
+#ifdef DEBUG
+// rgb = normal_to_rgb(hit_info.normal);
+// rgb = depth_to_rgb(hit_info.t);
+#endif
 
             auto clamp = [](float x) { return x < 0 ? 0 : x > 1 ? 1 : x; };
 
