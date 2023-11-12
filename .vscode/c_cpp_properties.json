@@ -9,7 +9,8 @@
             "defines": [],
             "cStandard": "c17",
             "cppStandard": "gnu++17",
-            "intelliSenseMode": "${default}"
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerPath": "/usr/local/cuda/bin/nvcc"
         }
     ],
     "version": 4

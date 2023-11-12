@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(cuda-gdb) Launch",
+            "name": "(CUDA) Launch",
             "type": "cuda-gdb",
             "request": "launch",
             "program": "${workspaceFolder}/build/raytracing",
@@ -17,7 +17,7 @@
             "preLaunchTask": "build",
         },
         {
-            "name": "(cuda-gdb) Launch release",
+            "name": "(CUDA) Launch release",
             "type": "cuda-gdb",
             "request": "launch",
             "program": "${workspaceFolder}/build-release/raytracing",
@@ -29,7 +29,7 @@
             },
         },
         {
-            "name": "(gdb) Launch",
+            "name": "(HOST) Launch",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/raytracing",
@@ -53,14 +53,14 @@
             "preLaunchTask": "build"
         },
         {
-            "name": "CUDA Current",
+            "name": "(CUDA Current",
             "type": "cuda-gdb",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
             "preLaunchTask": "build current file",
         },
         {
-            "name": "CUDA Link Current",
+            "name": "(CUDA) Link Current",
             "type": "cuda-gdb",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",

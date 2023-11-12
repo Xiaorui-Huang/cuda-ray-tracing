@@ -36,6 +36,13 @@ class float3d {
         return float3d(x() + other.x(), y() + other.y(), z() + other.z());
     }
 
+    __host__ __device__ inline float3d &operator+=(const float3d &other) {
+        data[0] += other.x();
+        data[1] += other.y();
+        data[2] += other.z();
+        return *this;
+    }
+
     // Subtraction
     __host__ __device__ inline float3d operator-(const float3d &other) const {
         return float3d(x() - other.x(), y() - other.y(), z() - other.z());
@@ -58,8 +65,8 @@ class float3d {
 
     // Scalar division
     __host__ __device__ inline float3d operator/(float scalar) const {
-        float devisor = 1.0 / scalar;
-        return (*this) * devisor;
+        float divisor = 1.0 / scalar;
+        return (*this) * divisor;
     }
 
     // Dot product

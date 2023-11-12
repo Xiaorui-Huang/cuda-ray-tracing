@@ -20,6 +20,18 @@
 #include <cuda_runtime.h>
 #define N 32
 
+/**
+ * Converts the given position to one which is relative to this context.
+ *
+ * ```ts
+ * let i: number = 1;
+ * const a = true;
+ * ```
+ *
+ * @param value The position to convert.
+ *
+ * @returns The position in local space.
+ */
 __global__ void show_material(Material *d_materials) {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     printf("Material: %f\n", d_materials[i].phong_exponent);
@@ -51,8 +63,8 @@ int main(int argc, char *argv[]) {
     // very well suited for __constant__ use case, except the data is too large
     to_cuda(d_camera, &camera);
     to_cuda(d_objects, objects.data(), objects.size());
-    to_cuda(d_materials, materials.data(), materials.size());
     to_cuda(d_lights, lights.data(), lights.size());
+    to_cuda(d_materials, materials.data(), materials.size());
     // Good use for 2D or 3D array, but accessing is too complicated
     // https: //docs.nvidia.com/cuda/cuda-c-programming-guide/index.html?highlight=cudaMallocPitched#device-memory
     cudaMalloc(&d_rgb_image, image_size);
@@ -79,6 +91,8 @@ int main(int argc, char *argv[]) {
                                                            objects.size(),
                                                            d_lights,
                                                            lights.size(),
+                                                           d_materials,
+                                                           materials.size(),
                                                            width,
                                                            height,
                                                            d_rays,
