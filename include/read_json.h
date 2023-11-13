@@ -41,13 +41,17 @@ using json = nlohmann::json;
  * @param objects `Output` list of objects
  * @param lights `Output` list of lights
  * @param materials `Output` list of materials
+ * @param planes `Output` list of infinite planes - filtered out of objects if BVH is used
+ * @param no_bvh `Input` if true, do not use BVH - will not filter out planes
  * @return true if json file was read successfully
  */
 inline bool readJson(const std::string &filename,
                      Camera &camera,
                      std::vector<Object> &objects,
                      std::vector<Light> &lights,
-                     std::vector<Material> &materials) {
+                     std::vector<Material> &materials,
+                     std::vector<Plane> &planes,
+                     bool no_bvh = false) {
     // Heavily borrowing from
     // https://github.com/yig/graphics101-raycasting/blob/master/parser.cpp
 
@@ -73,8 +77,9 @@ inline bool readJson(const std::string &filename,
 
     std::unordered_map<std::string, std::shared_ptr<Material>> materials_map;
     auto parse_materials_map =
-        [&parse_float3d](const json &j,
-                      std::unordered_map<std::string, std::shared_ptr<Material>> &materials_map) {
+        [&parse_float3d](
+            const json &j,
+            std::unordered_map<std::string, std::shared_ptr<Material>> &materials_map) {
             materials_map.clear();
             for (const json &jmat : j) {
                 std::string name = jmat["name"];
@@ -105,8 +110,8 @@ inline bool readJson(const std::string &filename,
     };
     parse_lights(j["lights"], lights);
 
-    auto parse_objects = [&parse_float3d, &filename, &materials_map,
-                         &materials](const json &j, std::vector<Object> &objects) {
+    auto parse_objects = [&](
+                             const json &j, std::vector<Object> &objects) {
         objects.clear();
         for (const json &jobj : j) {
             if (jobj.count("material")) {
@@ -123,11 +128,14 @@ inline bool readJson(const std::string &filename,
                 Plane plane;
                 plane.point = parse_float3d(jobj["point"]);
                 plane.normal = parse_float3d(jobj["normal"]).normalized();
-                objects.push_back(Object(plane));
+                if (no_bvh)
+                    objects.push_back(Object(plane));
+                else
+                    planes.push_back(plane);
             } else if (jobj["type"] == "triangle") {
-                Triangle tri =
-                    Triangle(parse_float3d(jobj["corners"][0]), parse_float3d(jobj["corners"][1]),
-                             parse_float3d(jobj["corners"][2]));
+                Triangle tri = Triangle(parse_float3d(jobj["corners"][0]),
+                                        parse_float3d(jobj["corners"][1]),
+                                        parse_float3d(jobj["corners"][2]));
                 objects.push_back(Object(tri));
             } else if (jobj["type"] == "soup") {
                 std::vector<std::vector<float>> V;

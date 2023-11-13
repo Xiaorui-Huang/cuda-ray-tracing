@@ -6,6 +6,7 @@
 struct Ray;
 struct HitInfo;
 
+// Infinite plane
 struct Plane {
     float3d point;
     float3d normal;

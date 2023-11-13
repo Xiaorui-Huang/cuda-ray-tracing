@@ -8,6 +8,7 @@
 #include "Float3d.cuh"
 #include "Light.cuh"
 #include "Object.cuh"
+#include <bvh/BVH.cuh>
 
 #include "Camera.h"
 #include "Material.h"
@@ -35,8 +36,17 @@ int main(int argc, char *argv[]) {
     std::vector<Material> materials;
     std::vector<Light> lights;
 
+    // filter out planes for BVH
+    std::vector<Plane> planes;
+
     // Read a camera and scene description from given .json file
-    readJson(args.filename, camera, objects, lights, materials);
+    readJson(args.filename, camera, objects, lights, materials, planes, args.no_bvh);
+    
+
+    std::vector<BVHNode> bvh_nodes;
+    constructBVH(objects, bvh_nodes);
+
+
     // usually it's 16:9 -> 1.77777778f
     unsigned int width = args.resolution * camera.width / camera.height;
     unsigned int height = args.resolution;

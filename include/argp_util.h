@@ -7,6 +7,7 @@
 #endif
 
 #define KEY_PPM 1001
+#define KEY_BVH 1002
 
 const char *argp_program_version = "CUDA (Real-Timr) Ray Tracing v0.1";
 const char *argp_program_bug_address = "hxr.richard@gmail.com";
@@ -18,7 +19,7 @@ static char doc[] = "Real-Time Ray Tracing with CUDA.\n\n"
 
 /* A description of the arguments we accept. */
 static char args_doc[] =
-    "[-f FILE='../data/bunny.json'] [-b SIZE] [-r RESOLUTION] [--ppm]";
+    "[-f FILE='../data/bunny.json'] [-b SIZE] [-r RESOLUTION] [--ppm] [--no-bvh]";
 
 /*
 name: This is the long name of the option, used with two dashes in command-line
@@ -50,8 +51,8 @@ static struct argp_option options[] = {
     {"filename", 'f', "FILE", 0, "Path to the Scene JSON config file. Default: ../data/bunny.json"},
     {"blocksize", 'b', "SIZE", 0, "Block size for CUDA processing. Default: 64 x 64"},
     {"resolution", 'r', "RESOLUTION", 0, "Resolution of the output image (e.g. 360, 720, 1080). Default: 720"},
+    {"no-bvh", KEY_BVH, 0, 0, "Turn off Ray Tracing with BVH. Default: BVH is ON"}, // Boolean flag for PPM output
     {"ppm", KEY_PPM, 0, 0, "Create .ppm (Portable Pixmap) output. Default: OFF"}, // Boolean flag for PPM output
-    {"help", 'h', 0, 0, "Show this help message"}, // Adding -h for help
     {0}};
 // clang-format on
 
@@ -59,6 +60,7 @@ struct arguments {
     char *filename = const_cast<char *>("../data/bunny.json"); // Default filename
     int blocksize = BLOCK_DIM;                                 // Default block size
     int resolution = 720;                                      // Default height
+    bool no_bvh = false;                                           
     bool ppm = false;                                          // Default PPM output
 };
 
@@ -79,8 +81,8 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
     case KEY_PPM:
         arguments->ppm = true;
         break;
-    case 'h': // Handling -h for help
-        argp_state_help(state, stdout, ARGP_HELP_STD_HELP);
+    case KEY_BVH:
+        arguments->no_bvh = true;
         break;
 
     default:

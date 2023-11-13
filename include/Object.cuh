@@ -8,15 +8,12 @@
 #include "Plane.cuh"
 #include "Sphere.cuh"
 #include "Triangle.cuh"
-#include <bvh/BVH.cuh>
 
 #define EPS 1e-4f
 
-enum class ObjectType { BVH, Plane, Sphere, Triangle, TriangleSoup };
+enum class ObjectType { Plane, Sphere, Triangle, TriangleSoup };
 
-// TODO: refactor box into each individual object
 union ObjectData {
-    size_t bvh_index;
     Plane plane;
     Sphere sphere;
     Triangle triangle;
@@ -27,10 +24,6 @@ struct Object {
     ObjectData data;
     AABB box;
     int material_index; // Unique identifier for the object
-
-    // Object(const BVHNode &bvh)
-    //     : type(ObjectType::BVH), material_index(-1), data({.bvh = bvh}),
-    //     box
 
     __host__ __device__ Object(const Sphere &sphere)
         : type(ObjectType::Sphere), material_index(-1), data({.sphere = sphere}),
@@ -87,8 +80,6 @@ __device__ bool Object::intersect(const Ray &ray,
                                   float3d &n) const {
     // Object-specific intersection
     switch (type) {
-    case ObjectType::BVH:
-        return data.bvh.intersect(ray, min_t, max_t, t, n);
     case ObjectType::Plane:
         return data.plane.intersect(ray, min_t, max_t, t, n);
     case ObjectType::Sphere:

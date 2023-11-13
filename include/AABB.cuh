@@ -14,7 +14,8 @@ struct AABB {
     
     __host__ __device__ AABB(const float3d &_min, const float3d &_max): min(_min), max(_max) {}
     
-    __device__ float3d center() const { return (min + max) * 0.5; }
+    // since we have cpu implmentation and gpu implementation 
+    __host__ __device__ float3d center() const { return (min + max) * 0.5; }
 };
 
 
