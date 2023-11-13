@@ -19,7 +19,7 @@ static char doc[] = "Real-Time Ray Tracing with CUDA.\n\n"
 
 /* A description of the arguments we accept. */
 static char args_doc[] =
-    "[-f FILE='../data/bunny.json'] [-b SIZE] [-r RESOLUTION] [--ppm] [--no-bvh]";
+    "[-f FILE='../data/bunny.json'] [-b SIZE=64] [-r RESOLUTION=720] [--no-bvh] [-o FILE='rgb.png']";
 
 /*
 name: This is the long name of the option, used with two dashes in command-line
@@ -52,17 +52,30 @@ static struct argp_option options[] = {
     {"blocksize", 'b', "SIZE", 0, "Block size for CUDA processing. Default: 64 x 64"},
     {"resolution", 'r', "RESOLUTION", 0, "Resolution of the output image (e.g. 360, 720, 1080). Default: 720"},
     {"no-bvh", KEY_BVH, 0, 0, "Turn off Ray Tracing with BVH. Default: BVH is ON"}, // Boolean flag for PPM output
-    {"ppm", KEY_PPM, 0, 0, "Create .ppm (Portable Pixmap) output. Default: OFF"}, // Boolean flag for PPM output
+    {"output", 'o', "FILE", 0, "Output file name. We only support .png and .ppm format. Default: rgb.png"},
     {0}};
 // clang-format on
 
 struct arguments {
     char *filename = const_cast<char *>("../data/bunny.json"); // Default filename
+    char *outputname = const_cast<char *>("rgb.png");          // Default output filename
     int blocksize = BLOCK_DIM;                                 // Default block size
     int resolution = 720;                                      // Default height
     bool no_bvh = false;                                           
-    bool ppm = false;                                          // Default PPM output
 };
+
+bool ends_with(const char* str, const char* suffix) {
+    if (str == nullptr || suffix == nullptr)
+        return false;
+
+    size_t str_len = strlen(str);
+    size_t suffix_len = strlen(suffix);
+
+    if (suffix_len > str_len)
+        return false;
+
+    return strncmp(str + str_len - suffix_len, suffix, suffix_len) == 0;
+}
 
 /* Parse a single option. */
 static error_t parse_opt(int key, char *arg, struct argp_state *state) {
@@ -78,8 +91,12 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
     case 'r':
         arguments->resolution = std::stoi(arg);
         break;
-    case KEY_PPM:
-        arguments->ppm = true;
+    case 'o':
+        if(!ends_with(arg, ".png") && !ends_with(arg, ".ppm")) {
+            argp_error(state, "Output file format not supported. Only .png and .ppm are supported.");
+            return EINVAL;
+        }
+        arguments->outputname = arg;
         break;
     case KEY_BVH:
         arguments->no_bvh = true;
@@ -93,5 +110,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
 
 /* Our argp parser. */
 static struct argp argp = {options, parse_opt, args_doc, doc};
+
+
 
 #endif // ARGUMENTS_H
