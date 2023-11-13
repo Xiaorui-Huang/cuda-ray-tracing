@@ -14,8 +14,9 @@
 
 enum class ObjectType { BVH, Plane, Sphere, Triangle, TriangleSoup };
 
+// TODO: refactor box into each individual object
 union ObjectData {
-    BVHNode bvh;
+    size_t bvh_index;
     Plane plane;
     Sphere sphere;
     Triangle triangle;
