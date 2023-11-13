@@ -107,7 +107,7 @@ Block size:    64 x 64
 Grid size:     10 x 6
 Time:          34.9327 ms
 Throughput:    6.5955 M rays/s
-FPS:           28.6264 fps
+FPS:           28.6264 fps     <------------ ~30 fps :)
 Scene size:    68484 bytes
 # of objects:  1000
 # of lights:   4
