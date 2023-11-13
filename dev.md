@@ -40,6 +40,10 @@ Two Blog that give significant insight into the implementation of parallel BVH
 
 <https://developer.nvidia.com/blog/how-query-device-properties-and-handle-errors-cuda-cc/>
 
+### Best Practices
+
+<https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1204r0.html>
+
 ### Dynamic Linker
 
 <https://developer.nvidia.com/blog/separate-compilation-linking-cuda-device-code/>

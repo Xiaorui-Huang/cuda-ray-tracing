@@ -7,6 +7,11 @@ project(raytracing LANGUAGES CUDA CXX)
 # Add the include directory
 include_directories("include")
 
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+  message(STATUS "dir='${dir}'")
+endforeach()
+
 # Source directory
 set(SRC_DIR "src")
 file(GLOB SRCFILES "${SRC_DIR}/*.cu")

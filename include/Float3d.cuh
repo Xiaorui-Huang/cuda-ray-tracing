@@ -3,6 +3,9 @@
 
 #include <cmath>
 
+__host__ __device__ inline bool is_zero(float a, float tolerance = 1e-6f) {
+    return fabsf(a) <= tolerance;
+}
 class float3d {
   private:
     float data[3];
@@ -81,11 +84,39 @@ class float3d {
                        x() * other.y() - y() * other.x());
     }
 
+    __host__ __device__ inline float3d operator<(const float3d &other) const {
+        return float3d(x() < other.x(), y() < other.y(), z() < other.z());
+    }
+
+    __host__ __device__ inline float3d operator>(const float3d &other) const {
+        return float3d(x() > other.x(), y() > other.y(), z() > other.z());
+    }
+
+    __host__ __device__ inline float3d operator<=(const float3d &other) const {
+        return float3d(x() <= other.x(), y() <= other.y(), z() <= other.z());
+    }
+
+    __host__ __device__ inline float3d operator>=(const float3d &other) const {
+        return float3d(x() >= other.x(), y() >= other.y(), z() >= other.z());
+    }
+
+    __host__ __device__ inline bool any() const {
+        return !is_zero(x()) || !is_zero(y()) || !is_zero(z());
+    }
+
     __host__ __device__ inline float norm() const { return sqrt(dot(*this)); }
 
     __host__ __device__ inline float3d normalized() const { return (*this) / norm(); }
 
     __host__ __device__ inline void normalize() { (*this) = (*this) / norm(); }
+
+    __host__ __device__ inline float3d cwiseMax(const float3d &other) const {
+        return float3d(max(x(), other.x()), max(y(), other.y()), max(z(), other.z()));
+    }
+
+    __host__ __device__ inline float3d cwiseMin(const float3d &other) const {
+        return float3d(min(x(), other.x()), min(y(), other.y()), min(z(), other.z()));
+    }
 };
 
 __host__ __device__ inline float3d operator*(float scalar, const float3d &vec) {

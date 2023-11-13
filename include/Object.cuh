@@ -4,37 +4,40 @@
 #include <math.h>
 
 #include "AABB.cuh"
+
 #include "Plane.cuh"
 #include "Sphere.cuh"
 #include "Triangle.cuh"
+#include <bvh/BVH.cuh>
 
 #define EPS 1e-4f
 
-enum class ObjectType { AABB, Plane, Sphere, Triangle, TriangleSoup };
+enum class ObjectType { BVH, Plane, Sphere, Triangle, TriangleSoup };
 
 union ObjectData {
-    AABB aabb;
+    BVHNode bvh;
     Plane plane;
     Sphere sphere;
     Triangle triangle;
 };
 
 struct Object {
-    ObjectData data;
     ObjectType type;
-    AABB bounding_box;
+    ObjectData data;
+    AABB box;
     int material_index; // Unique identifier for the object
 
-    __host__ __device__ Object(const AABB &aabb)
-        : type(ObjectType::AABB), bounding_box(aabb), material_index(-1), data({.aabb = aabb}) {}
+    // Object(const BVHNode &bvh)
+    //     : type(ObjectType::BVH), material_index(-1), data({.bvh = bvh}),
+    //     box
 
     __host__ __device__ Object(const Sphere &sphere)
         : type(ObjectType::Sphere), material_index(-1), data({.sphere = sphere}),
-          bounding_box(sphere.center - sphere.radius, sphere.center + sphere.radius) {}
+          box(sphere.center - sphere.radius, sphere.center + sphere.radius) {}
 
     __host__ __device__ Object(const Triangle &triangle)
         : type(ObjectType::Triangle), material_index(-1), data({.triangle = triangle}),
-          bounding_box(triangle.min_corner(), triangle.max_corner()) {}
+          box(triangle.min_corner(), triangle.max_corner()) {}
 
     __host__ __device__ Object(const Plane &plane)
         : type(ObjectType::Plane), material_index(-1), data({.plane = plane}) {
@@ -59,10 +62,9 @@ struct Object {
             max_bounds.z() = plane.point.z() + EPS;
         }
         // Set the bounding box for the plane
-        bounding_box = AABB(min_bounds, max_bounds);
+        box = AABB(min_bounds, max_bounds);
     }
 
-    
     /**
      * @brief Test if a ray intersects with `this` object. `n` and `t` are only set if the ray intersects with the object.
      * 
@@ -82,13 +84,10 @@ __device__ bool Object::intersect(const Ray &ray,
                                   const float max_t,
                                   float &t,
                                   float3d &n) const {
-    // we did not implement BVH yet, so we ignore this
-    // if (!bounding_box.intersect(ray, min_t, max_t, t, n)) {
-    //     return false; // Bounding box check first for early exit
-    // }
-
     // Object-specific intersection
     switch (type) {
+    case ObjectType::BVH:
+        return data.bvh.intersect(ray, min_t, max_t, t, n);
     case ObjectType::Plane:
         return data.plane.intersect(ray, min_t, max_t, t, n);
     case ObjectType::Sphere:
