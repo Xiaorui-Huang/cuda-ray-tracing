@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+    
         {
             "name": "(CUDA) Launch",
             "type": "cuda-gdb",
@@ -34,6 +35,31 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/raytracing",
             "cwd": "${workspaceFolder}/build",
+            "stopAtEntry": false,
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set disassembly-flavor intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                },
+            ],
+            "preLaunchTask": "build"
+        },
+        {
+            "name": "(HOST) Launch Args",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/raytracing",
+            "cwd": "${workspaceFolder}/build",
+            "args": ["-f", "../data/2b.json", "-r", "180"],
             "stopAtEntry": false,
             "environment": [],
             "externalConsole": false,

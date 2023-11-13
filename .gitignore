@@ -63,4 +63,6 @@ srcCpp
 /cuda_samples/*
 !/cuda_samples/*.cu
 include.tar.gz
-data/2B*.stl
+data/2b*
+data/2B*
+images/2b*

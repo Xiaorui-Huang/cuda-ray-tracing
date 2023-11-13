@@ -1,6 +1,6 @@
 # CUDA Ray Tracing
 
-Learning about cuda with ray tracing
+*Learning about cuda with ray tracing*
 
 ![4K Bunny](images/4k_bunny.png)
 ***4K Bunny!!! Ray Traced in lighting speed***
@@ -99,6 +99,7 @@ Report bugs to hxr.richard@gmail.com.
 ```
 
 ## Scene Configuration and Current Results
+
 ```
 $ ./raytracing -r 360 
 
