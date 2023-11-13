@@ -3,7 +3,7 @@
 
 #include <argp.h>
 #ifndef BLOCK_DIM
-#define BLOCK_DIM 64
+#define BLOCK_DIM 16
 #endif
 
 #define KEY_PPM 1001
@@ -19,7 +19,7 @@ static char doc[] = "Real-Time Ray Tracing with CUDA.\n\n"
 
 /* A description of the arguments we accept. */
 static char args_doc[] =
-    "[-f FILE='../data/bunny.json'] [-b SIZE=64] [-r RESOLUTION=720] [--no-bvh] [-o FILE='rgb.png']";
+    "[-f FILE='../data/bunny.json'] [-b SIZE=16] [-r RESOLUTION=720] [--no-bvh] [-o FILE='rgb.png']";
 
 /*
 name: This is the long name of the option, used with two dashes in command-line
@@ -47,9 +47,10 @@ group: This is used to group related options in the help output. Options with
     a specific need to group options.
 */
 // clang-format off
+// TODO: add grid size option
 static struct argp_option options[] = {
     {"filename", 'f', "FILE", 0, "Path to the Scene JSON config file. Default: ../data/bunny.json"},
-    {"blocksize", 'b', "SIZE", 0, "Block size for CUDA processing. Default: 64 x 64"},
+    {"blocksize", 'b', "SIZE", 0, "Block size for CUDA processing. Default: 16 x 16"},
     {"resolution", 'r', "RESOLUTION", 0, "Resolution of the output image (e.g. 360, 720, 1080). Default: 720"},
     {"no-bvh", KEY_BVH, 0, 0, "Turn off Ray Tracing with BVH. Default: BVH is ON"}, // Boolean flag for PPM output
     {"output", 'o', "FILE", 0, "Output file name. We only support .png and .ppm format. Default: rgb.png"},

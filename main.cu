@@ -43,7 +43,14 @@ int main(int argc, char *argv[]) {
     readJson(args.filename, camera, objects, lights, materials, planes, args.no_bvh);
 
     std::vector<BVHNode> bvh_nodes;
-    constructBVH(objects, bvh_nodes);
+    size_t root_index = constructBVH(objects, bvh_nodes);
+    
+    
+    auto box = bvh_nodes[root_index].box;
+    auto center = bvh_nodes[root_index].box.center();
+    const int label_width = 15;
+    std::cout << std::left << std::setw(label_width) << "BVH root box: (" << box.min.x() << ", " << box.min.y() << ", " << box.min.z() << ") - (" << box.max.x() << ", " << box.max.y() << ", " << box.max.z() << ")" << std::endl;
+    std::cout << std::left << std::setw(label_width) <<"Center of BVH root: (" << center.x() << ", " << center.y() << ", " << center.z() << ")" << std::endl;
 
     // usually it's 16:9 -> 1.77777778f
     unsigned int width = args.resolution * camera.width / camera.height;
@@ -72,8 +79,8 @@ int main(int argc, char *argv[]) {
     size_t scene_size = sizeof(Camera) + objects.size() * sizeof(Object) +
                         materials.size() * sizeof(Material) + lights.size() * sizeof(Light);
 
-    dim3 block_per_grid(args.blocksize, args.blocksize);
-    dim3 thread_per_block(ceil(width, block_per_grid.x), ceil(height, block_per_grid.y));
+    dim3 block_dim(args.blocksize, args.blocksize);
+    dim3 grid_dim(ceil(width, block_dim.x), ceil(height, block_dim.y));
     // To ensure all pixels are processed, we round up the number of blocks (although it reduces occupancy - i.e. empty threads)
 
     // Dynamic parallelism - prepare child kernel (Doesn't work - no child and parent grid sync)
@@ -81,19 +88,18 @@ int main(int argc, char *argv[]) {
     // Ray *d_rays; HitInfo *d_hit_infos; cudaMalloc(&d_rays, width * height * sizeof(Ray)); cudaMalloc(&d_hit_infos, width * height * sizeof(HitInfo));
 
     // // Vanilla Kernel launch
-    // ray_trace_kernel<<<block_per_grid, thread_per_block>>>(*d_camera, d_objects, objects.size(), d_lights, lights.size(), d_materials, materials.size(), width, height, d_rgb_image);
+    // ray_trace_kernel<<<grid_dim, block_dim>>>(*d_camera, d_objects, objects.size(), d_lights, lights.size(), d_materials, materials.size(), width, height, d_rgb_image);
 
     // clang-format off
-    const int label_width = 15;
     std::cout << std::fixed << std::setprecision(4);
     std::cout << std::left << std::setw(label_width) << "Resolution:" << width << " x " << height << std::endl;
+    std::cout << std::left << std::setw(label_width) << "Grid size:" << grid_dim.x << " x " << grid_dim.y << std::endl;
     std::cout << std::left << std::setw(label_width) << "Block size:" << args.blocksize << " x " << args.blocksize << std::endl;
-    std::cout << std::left << std::setw(label_width) << "Grid size:" << thread_per_block.x << " x " << thread_per_block.y << std::endl;
     // clang-format on
     // use timed wrapped kernel launch
     float milliseconds = LaunchTimedKernel(ray_trace_kernel,
-                                           block_per_grid,
-                                           thread_per_block,
+                                           grid_dim,
+                                           block_dim,
                                            0,
                                            0,
                                            *d_camera,

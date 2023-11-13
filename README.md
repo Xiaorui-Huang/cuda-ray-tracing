@@ -73,14 +73,14 @@ make
 $ ./raytracing --help
 
 Usage: raytracing [OPTION...]
-            [-f FILE='../data/bunny.json'] [-b SIZE=64] [-r RESOLUTION=720]
+            [-f FILE='../data/bunny.json'] [-b SIZE=16] [-r RESOLUTION=720]
             [--no-bvh] [-o FILE='rgb.png']
 Real-Time Ray Tracing with CUDA.
 
 Involve parallel Ray Tracing and parallel BVH construction. (WIP)
 Intend to provide interactive component for ray tracing.
 
-  -b, --blocksize=SIZE       Block size for CUDA processing. Default: 64 x 64
+  -b, --blocksize=SIZE       Block size for CUDA processing. Default: 16 x 16 
   -f, --filename=FILE        Path to the Scene JSON config file. Default:
                              ../data/bunny.json
       --no-bvh               Turn off Ray Tracing with BVH. Default: BVH is ON
@@ -103,8 +103,8 @@ Report bugs to hxr.richard@gmail.com.
 $ ./raytracing -r 360 
 
 Resolution:    640 x 360
-Block size:    64 x 64
-Grid size:     10 x 6
+Block size:    10 x 6 
+Grid size:     64 x 64
 Time:          34.9327 ms
 Throughput:    6.5955 M rays/s
 FPS:           28.6264 fps     <------------ ~30 fps :)
