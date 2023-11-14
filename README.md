@@ -9,12 +9,13 @@
 
 ## Requirements
 
-- CMake 3.11
+- CMake $\geq$ *3.11*
 - CUDA Toolkit (Any modern version should work)
-- Currently Targeting GPU with compute capability 8.6 (My GPU)
+- Currently Targeting GPU with compute capability *86* (My GPU)
 
 **Note:** If you are using a different GPU, you will need to change `ARCH_CODE`
-in [CMakeLists.txt](CMakeLists.txt) to target your GPU. Or simple comment our all lines referencing `ARCH_CODE` and let *nvcc* auto detect your GPU.
+in [CMakeLists.txt](CMakeLists.txt) to target your GPU. Or simple comment our
+all lines referencing `ARCH_CODE` and let *nvcc* auto detect your GPU.
 
 ## Features and TODOs
 
@@ -23,11 +24,14 @@ in [CMakeLists.txt](CMakeLists.txt) to target your GPU. Or simple comment our al
 - [x] Parallel Ray Tracing
 - [x] Real-Time Ray Tracing (*for simple and lower resolution scene*)
 - [x] CPU Recursive BVH Construction
-- [ ] Parallel Iterative BVH Traversal- [Same Author's Blog](https://developer.nvidia.com/blog/thinking-parallel-part-iv-prefix-sums/)
 - [ ] Parallel BVH Construction - **Linear BVH** [Original Author's Blog](https://developer.nvidia.com/blog/thinking-parallel-part-iii-tree-construction-gpu/)
-- [x] Flexible Scene Configuration with JSON and .stl (see [data](data) folder)
+- [ ] Parallel Iterative BVH Traversal- [Same Author's Blog](https://developer.nvidia.com/blog/thinking-parallel-part-ii-tree-traversal-gpu/)
+- [x] Flexible Scene Configuration with JSON and `.stl` (see [data](data) folder)
 
-**Note:** CPU BVH construction and Blinn-Phong Shading are Naively implemented. Major improvement is possible from current results.
+**Notes:** 
+- CPU BVH construction and Blinn-Phong Shading are Naively implemented.
+Major improvement is possible from current results.
+- For faster development cycles as API are still changing, implementation are done mostly in `.cuh` header files.
 
 ### Down the line
 
@@ -47,7 +51,8 @@ Will probably not get to all of them, but hopefully most 😎👌
 
 ## Quick Start
 
-❗ Since BVH Traversal is not completly implemented. Planes are not rendered. use `--no-bvh` to turn off BVH for plane rendering.
+❗ Since BVH Traversal is not completly implemented. Planes are not rendered.
+use `--no-bvh` to turn off BVH for plane rendering.
 
 ### VSCode
 
@@ -59,8 +64,8 @@ Will probably not get to all of them, but hopefully most 😎👌
 
 ```bash
 # cd to project root
-mkdir build-release -p 
-cd build-release 
+mkdir build -p 
+cd build
 cmake -DCMAKE_BUILD_TYPE=Release .. # or just cmake .. for debug build
 make
 
@@ -74,16 +79,22 @@ $ ./raytracing --help
 
 Usage: raytracing [OPTION...]
             [-f FILE='../data/bunny.json'] [-b SIZE=16] [-r RESOLUTION=720]
-            [--no-bvh] [-o FILE='rgb.png']
+            [--no-bvh] [--landscape] [-o FILE='rgb.png']
 Real-Time Ray Tracing with CUDA.
 
 Involve parallel Ray Tracing and parallel BVH construction. (WIP)
 Intend to provide interactive component for ray tracing.
 
-  -b, --blocksize=SIZE       Block size for CUDA processing. Default: 16 x 16 
+  -b, --blocksize=SIZE       Block size for CUDA processing. Mutually Exclusive
+                             with Block size (format: [x] or [y,x]. Single
+                             value expands to [x,x]). Default: 16
   -f, --filename=FILE        Path to the Scene JSON config file. Default:
                              ../data/bunny.json
-      --no-bvh               Turn off Ray Tracing with BVH. Default: BVH is ON
+  -g, --gridsize=SIZE        Grid size for CUDA processing. Mutually Exclusive
+                             with Grid size (format: same as blocksize).
+                             Default: 16
+  -l, --landscape            Render in landscape mode. Default: portrait mode
+  -n, --no-bvh               Turn off Ray Tracing with BVH. Default: BVH is ON
   -o, --output=FILE          Output file name. We only support .png and .ppm
                              format. Default: rgb.png
   -r, --resolution=RESOLUTION   Resolution of the output image (e.g. 360, 720,

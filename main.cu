@@ -24,6 +24,8 @@
 
 #include <cuda_runtime.h>
 
+#define LABEL_WIDTH 15
+
 int main(int argc, char *argv[]) {
     // arguments and default see [[include/argp_util.h]] - commentLinks extension
     arguments args;
@@ -42,19 +44,26 @@ int main(int argc, char *argv[]) {
     // Read a camera and scene description from given .json file
     readJson(args.filename, camera, objects, lights, materials, planes, args.no_bvh);
 
-    std::vector<BVHNode> bvh_nodes;
-    size_t root_index = constructBVH(objects, bvh_nodes);
-    
-    
-    auto box = bvh_nodes[root_index].box;
-    auto center = bvh_nodes[root_index].box.center();
-    const int label_width = 15;
-    std::cout << std::left << std::setw(label_width) << "BVH root box: (" << box.min.x() << ", " << box.min.y() << ", " << box.min.z() << ") - (" << box.max.x() << ", " << box.max.y() << ", " << box.max.z() << ")" << std::endl;
-    std::cout << std::left << std::setw(label_width) <<"Center of BVH root: (" << center.x() << ", " << center.y() << ", " << center.z() << ")" << std::endl;
+    if (!args.no_bvh) {
+        std::vector<BVHNode> bvh_nodes;
+        size_t root_index = constructBVH(objects, bvh_nodes);
+
+        auto box = bvh_nodes[root_index].box;
+        auto center = bvh_nodes[root_index].box.center();
+        // clang-format off
+        std::cout << "[debug info]:" << std::endl;
+        std::cout << std::left << std::setw(LABEL_WIDTH) << "BVH root box: (" << box.min.x() << ", " << box.min.y() << ", " << box.min.z() << ") - (" << box.max.x() << ", " << box.max.y() << ", " << box.max.z() << ")" << std::endl;
+        std::cout << std::left << std::setw(LABEL_WIDTH) << "Center of BVH root: (" << center.x() << ", " << center.y() << ", " << center.z() << ")" << std::endl << std::endl;
+        // clang-format on
+    }
 
     // usually it's 16:9 -> 1.77777778f
     unsigned int width = args.resolution * camera.width / camera.height;
     unsigned int height = args.resolution;
+    if (args.landscape) {
+        std::swap(width, height);
+        std::swap(camera.width, camera.height);
+    }
 
     //device data
     std::vector<unsigned char> h_rgb_image(3 * width * height);
@@ -79,9 +88,12 @@ int main(int argc, char *argv[]) {
     size_t scene_size = sizeof(Camera) + objects.size() * sizeof(Object) +
                         materials.size() * sizeof(Material) + lights.size() * sizeof(Light);
 
-    dim3 block_dim(args.blocksize, args.blocksize);
-    dim3 grid_dim(ceil(width, block_dim.x), ceil(height, block_dim.y));
+    // set by block or grid size
     // To ensure all pixels are processed, we round up the number of blocks (although it reduces occupancy - i.e. empty threads)
+    dim3 block_dim = args.size;
+    dim3 grid_dim(ceil(width, block_dim.x), ceil(height, block_dim.y));
+    if (args.gridsize_set) 
+        std::swap(grid_dim, block_dim);
 
     // Dynamic parallelism - prepare child kernel (Doesn't work - no child and parent grid sync)
     // Malloc for child grid memory
@@ -92,9 +104,9 @@ int main(int argc, char *argv[]) {
 
     // clang-format off
     std::cout << std::fixed << std::setprecision(4);
-    std::cout << std::left << std::setw(label_width) << "Resolution:" << width << " x " << height << std::endl;
-    std::cout << std::left << std::setw(label_width) << "Grid size:" << grid_dim.x << " x " << grid_dim.y << std::endl;
-    std::cout << std::left << std::setw(label_width) << "Block size:" << args.blocksize << " x " << args.blocksize << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "Resolution:" << width << " x " << height << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "Grid size:" << grid_dim.x << " x " << grid_dim.y << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "Block size:" << block_dim.x << " x " << block_dim.y << std::endl;
     // clang-format on
     // use timed wrapped kernel launch
     float milliseconds = LaunchTimedKernel(ray_trace_kernel,
@@ -120,22 +132,22 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     // clang-format off
-    std::cout << std::left << std::setw(label_width) << "Time:" << milliseconds << " ms" << std::endl;
-    std::cout << std::left << std::setw(label_width) << "Throughput:" << width * height / milliseconds / 1000 << " M rays/s" << std::endl;
-    std::cout << std::left << std::setw(label_width) << "FPS:" << 1000 / milliseconds << " fps" << std::endl;
-    std::cout << std::left << std::setw(label_width) << "Scene size:" << scene_size << " bytes" << std::endl;
-    std::cout << std::left << std::setw(label_width) << "# of objects:" << objects.size() << std::endl;
-    std::cout << std::left << std::setw(label_width) << "# of lights:" << lights.size() << std::endl;
-    std::cout << std::left << std::setw(label_width) << "BVH enabled:" << (args.no_bvh ? "False" : "True") << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "Time:" << milliseconds << " ms" << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "Throughput:" << width * height / milliseconds / 1000 << " M rays/s" << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "FPS:" << 1000 / milliseconds << " fps" << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "Scene size:" << scene_size << " bytes" << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "# of objects:" << objects.size() << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "# of lights:" << lights.size() << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "BVH enabled:" << (args.no_bvh ? "False" : "True") << std::endl;
     // clang-format on
 
     cudaMemcpy(h_rgb_image.data(), d_rgb_image, image_size, cudaMemcpyDeviceToHost);
 
-    std::cout << std::endl << "Writing image to "<< args.outputname << std::endl;
+    std::cout << std::endl << "Writing image to " << args.outputname << std::endl;
 
     if (ends_with(args.outputname, ".png")) {
         stbi_write_png(args.outputname, width, height, 3, h_rgb_image.data(), width * 3);
-    } else if(ends_with(args.outputname, ".ppm")){
+    } else if (ends_with(args.outputname, ".ppm")) {
         write_ppm(args.outputname, h_rgb_image, width, height, 3);
     }
 

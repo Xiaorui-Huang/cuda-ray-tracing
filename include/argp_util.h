@@ -2,9 +2,10 @@
 #define ARGP_PAESER_H
 
 #include <argp.h>
-#ifndef BLOCK_DIM
-#define BLOCK_DIM 16
-#endif
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #define KEY_PPM 1001
 #define KEY_BVH 1002
@@ -18,8 +19,8 @@ static char doc[] = "Real-Time Ray Tracing with CUDA.\n\n"
                     "Intend to provide interactive component for ray tracing.\n";
 
 /* A description of the arguments we accept. */
-static char args_doc[] =
-    "[-f FILE='../data/bunny.json'] [-b SIZE=16] [-r RESOLUTION=720] [--no-bvh] [-o FILE='rgb.png']";
+static char args_doc[] = "[-f FILE='../data/bunny.json'] [-b SIZE=16] [-r RESOLUTION=720] "
+                         "[--no-bvh] [--landscape] [-o FILE='rgb.png']";
 
 /*
 name: This is the long name of the option, used with two dashes in command-line
@@ -50,22 +51,50 @@ group: This is used to group related options in the help output. Options with
 // TODO: add grid size option
 static struct argp_option options[] = {
     {"filename", 'f', "FILE", 0, "Path to the Scene JSON config file. Default: ../data/bunny.json"},
-    {"blocksize", 'b', "SIZE", 0, "Block size for CUDA processing. Default: 16 x 16"},
+    {"blocksize", 'b', "SIZE", 0, "Block size for CUDA processing. Mutually Exclusive with Block size (format: [x] or [y,x]. Single value expands to [x,x]). Default: 16"},
+    {"gridsize", 'g', "SIZE", 0, "Grid size for CUDA processing. Mutually Exclusive with Grid size (format: same as blocksize). Default: 16"},
     {"resolution", 'r', "RESOLUTION", 0, "Resolution of the output image (e.g. 360, 720, 1080). Default: 720"},
-    {"no-bvh", KEY_BVH, 0, 0, "Turn off Ray Tracing with BVH. Default: BVH is ON"}, // Boolean flag for PPM output
+    {"landscape", 'l', 0, 0, "Render in landscape mode. Default: portrait mode"},
+    {"no-bvh", 'n', 0, 0, "Turn off Ray Tracing with BVH. Default: BVH is ON"}, // Boolean flag for PPM output
     {"output", 'o', "FILE", 0, "Output file name. We only support .png and .ppm format. Default: rgb.png"},
     {0}};
 // clang-format on
 
+dim3 parse_dim3(const char *arg) {
+    std::vector<int> values;
+    std::stringstream ss(arg);
+    std::string item;
+    while (getline(ss, item, ',')) {
+        values.push_back(stoi(item));
+    }
+
+    dim3 result;
+    switch (values.size()) {
+    case 1:
+        result = dim3(values[0], values[0]);
+        break;
+    case 2:
+        result = dim3(values[0], values[1]);
+        break;
+    default:
+        throw std::invalid_argument("Invalid format for dim3");
+    }
+    return result;
+}
 struct arguments {
     char *filename = const_cast<char *>("../data/bunny.json"); // Default filename
     char *outputname = const_cast<char *>("rgb.png");          // Default output filename
-    int blocksize = BLOCK_DIM;                                 // Default block size
+    dim3 size = dim3(16, 16);                                  // Default grid or block size
     int resolution = 720;                                      // Default height
-    bool no_bvh = false;                                           
+    bool landscape = false;                                    // Default portrait mode
+    bool no_bvh = false;
+
+    // Arg group control flags
+    bool blocksize_set = false;
+    bool gridsize_set = false;
 };
 
-bool ends_with(const char* str, const char* suffix) {
+bool ends_with(const char *str, const char *suffix) {
     if (str == nullptr || suffix == nullptr)
         return false;
 
@@ -87,19 +116,34 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
         arguments->filename = arg; // arg is directly assignable to std::string
         break;
     case 'b':
-        arguments->blocksize = std::stoi(arg);
+        if (arguments->gridsize_set) {
+            argp_error(state, "blocksize and gridsize are mutually exclusive");
+        }
+        arguments->size = parse_dim3(arg);
+        arguments->blocksize_set = true;
+        break;
+    case 'g':
+        if (arguments->blocksize_set) {
+            argp_error(state, "blocksize and gridsize are mutually exclusive");
+        }
+        arguments->size = parse_dim3(arg);
+        arguments->gridsize_set = true;
         break;
     case 'r':
         arguments->resolution = std::stoi(arg);
         break;
+    case 'l':
+        arguments->landscape = true;
+        break;
     case 'o':
-        if(!ends_with(arg, ".png") && !ends_with(arg, ".ppm")) {
-            argp_error(state, "Output file format not supported. Only .png and .ppm are supported.");
+        if (!ends_with(arg, ".png") && !ends_with(arg, ".ppm")) {
+            argp_error(state,
+                       "Output file format not supported. Only .png and .ppm are supported.");
             return EINVAL;
         }
         arguments->outputname = arg;
         break;
-    case KEY_BVH:
+    case 'n':
         arguments->no_bvh = true;
         break;
 
@@ -111,7 +155,5 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
 
 /* Our argp parser. */
 static struct argp argp = {options, parse_opt, args_doc, doc};
-
-
 
 #endif // ARGUMENTS_H

@@ -7,11 +7,16 @@
 #include <memory>
 #include <vector>
 
+// Since we are in CPU
+// Fully embrace the fact that we can use pointers without penalalty
+// and avoid copying objects over and over again
 struct ObjectState {
-    Object obj;
+    std::shared_ptr<Object> obj;
     size_t index;
-    
-    ObjectState(const Object &obj, size_t index) : obj(obj), index(index) {}
+
+    ObjectState(const Object &obj, size_t index) : index(index) {
+        this->obj = std::make_shared<Object>(obj);
+    }
 };
 struct BVHNode {
     AABB box;
@@ -25,9 +30,7 @@ struct BVHNode {
     __host__ __device__ BVHNode() : left_index(-1), right_index(-1), object_index(-1) {}
 
     __device__ bool
-    intersect(const Ray &ray, const float min_t, const float max_t, float &t, float3d &n) const {
-        
-    }
+    intersect(const Ray &ray, const float min_t, const float max_t, float &t, float3d &n) const {}
 };
 
 // insert box A into box B - expand box B to fit box A
@@ -57,15 +60,15 @@ int constructBVH_recurse(const std::vector<std::shared_ptr<ObjectState>> &states
     // leaf node - a concrete object
     if (num_leaves == 1) {
         node.object_index = states[0]->index;
-        insert_box_into_box(states[0]->obj.box, node.box);
+        insert_box_into_box(states[0]->obj->box, node.box);
         bvh_nodes.at(node_index) = node;
         return node_index;
     }
 
     // Compute the bounding box for the current set of objects
     for (const auto &state : states) {
-        node.box.min = node.box.min.cwiseMin(state->obj.box.min);
-        node.box.max = node.box.max.cwiseMax(state->obj.box.max);
+        node.box.min = node.box.min.cwiseMin(state->obj->box.min);
+        node.box.max = node.box.max.cwiseMax(state->obj->box.max);
     }
 
     int axis = -1;
@@ -86,9 +89,9 @@ int constructBVH_recurse(const std::vector<std::shared_ptr<ObjectState>> &states
     std::vector<std::shared_ptr<ObjectState>> left_list, right_list, center_list;
 
     for (const auto &shared : states) {
-        if (shared->obj.box.center()[axis] < mid)
+        if (shared->obj->box.center()[axis] < mid)
             left_list.push_back(shared);
-        else if (shared->obj.box.center()[axis] > mid)
+        else if (shared->obj->box.center()[axis] > mid)
             right_list.push_back(shared);
         else
             center_list.push_back(shared);
