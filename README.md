@@ -2,6 +2,11 @@
 
 *Learning about cuda with ray tracing*
 
+***Disclaimer:*** This project is heavily inspired by contents learnt from [UofT Computer Graphics Course](https://github.com/alecjacobson/computer-graphics-csc317), specifically [A2](https://github.com/alecjacobson/computer-graphics-ray-casting), [A3](https://github.com/alecjacobson/computer-graphics-ray-tracing) and [A4](https://github.com/alecjacobson/computer-graphics-bounding-volume-hierarchy).
+ It repurposes course assets like JSON config style and `.stl` files for scene and borrows some high level concepts from the course.
+
+All implementation of the core data structure and algorithms are my own work.
+
 ![4K Bunny](images/4k_bunny.png)
 ***4K Bunny!!! Ray Traced in lighting speed***
 
@@ -14,7 +19,7 @@
 - Currently Targeting GPU with compute capability *86* (My GPU)
 
 **Note:** If you are using a different GPU, you will need to change `ARCH_CODE`
-in [CMakeLists.txt](CMakeLists.txt) to target your GPU. Or simple comment our
+in [CMakeLists.txt](CMakeLists.txt) to target your GPU. Or simple comment out
 all lines referencing `ARCH_CODE` and let *nvcc* auto detect your GPU.
 
 ## Features and TODOs
@@ -52,7 +57,7 @@ Will probably not get to all of them, but hopefully most 😎👌
 ## Quick Start
 
 ❗ Since BVH Traversal is not completly implemented. Planes are not rendered.
-use `--no-bvh` to turn off BVH for plane rendering.
+use `-n` or `--no-bvh` to turn off BVH for plane rendering.
 
 ### VSCode
 

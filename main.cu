@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
         auto box = bvh_nodes[root_index].box;
         auto center = bvh_nodes[root_index].box.center();
         // clang-format off
-        std::cout << "[debug info]:" << std::endl;
+        std::cout << "[debug info - single .stl]:" << std::endl;
         std::cout << std::left << std::setw(LABEL_WIDTH) << "BVH root box: (" << box.min.x() << ", " << box.min.y() << ", " << box.min.z() << ") - (" << box.max.x() << ", " << box.max.y() << ", " << box.max.z() << ")" << std::endl;
         std::cout << std::left << std::setw(LABEL_WIDTH) << "Center of BVH root: (" << center.x() << ", " << center.y() << ", " << center.z() << ")" << std::endl << std::endl;
         // clang-format on
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     // clang-format off
-    std::cout << std::left << std::setw(LABEL_WIDTH) << "Time:" << milliseconds << " ms" << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "Time:" << milliseconds << " ms (" << milliseconds/1000 << " s)" << std::endl;
     std::cout << std::left << std::setw(LABEL_WIDTH) << "Throughput:" << width * height / milliseconds / 1000 << " M rays/s" << std::endl;
     std::cout << std::left << std::setw(LABEL_WIDTH) << "FPS:" << 1000 / milliseconds << " fps" << std::endl;
     std::cout << std::left << std::setw(LABEL_WIDTH) << "Scene size:" << scene_size << " bytes" << std::endl;
@@ -145,11 +145,10 @@ int main(int argc, char *argv[]) {
 
     std::cout << std::endl << "Writing image to " << args.outputname << std::endl;
 
-    if (ends_with(args.outputname, ".png")) {
+    if (ends_with(args.outputname, ".png")) 
         stbi_write_png(args.outputname, width, height, 3, h_rgb_image.data(), width * 3);
-    } else if (ends_with(args.outputname, ".ppm")) {
+    else if (ends_with(args.outputname, ".ppm"))
         write_ppm(args.outputname, h_rgb_image, width, height, 3);
-    }
 
     cudaFree(d_camera);
     cudaFree(d_objects);
