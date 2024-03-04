@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 
+// Deprecated. for learning purposes only
 /**
  * @brief Macro to launch a kernel and measure its execution time
  * 
@@ -31,6 +32,29 @@
                                                                                                    \
         cudaDeviceSynchronize();                                                                   \
                                                                                                    \
+        cudaEventElapsedTime(&milliseconds, start, stop);                                          \
+                                                                                                   \
+        cudaEventDestroy(start);                                                                   \
+        cudaEventDestroy(stop);                                                                    \
+                                                                                                   \
+        return milliseconds;                                                                       \
+    })()
+
+#define TIME_KERNEL(stream, ...)                                                                   \
+    ([&]() -> float {                                                                              \
+        cudaEvent_t start, stop;                                                                   \
+        float milliseconds = 0;                                                                    \
+                                                                                                   \
+        cudaEventCreate(&start);                                                                   \
+        cudaEventCreate(&stop);                                                                    \
+                                                                                                   \
+        cudaEventRecord(start, stream);                                                            \
+                                                                                                   \
+        __VA_ARGS__;                                                                               \
+                                                                                                   \
+        cudaEventRecord(stop, stream);                                                             \
+                                                                                                   \
+        cudaDeviceSynchronize();                                                                   \
         cudaEventElapsedTime(&milliseconds, start, stop);                                          \
                                                                                                    \
         cudaEventDestroy(start);                                                                   \

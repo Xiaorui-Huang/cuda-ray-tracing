@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
     // To ensure all pixels are processed, we round up the number of blocks (although it reduces occupancy - i.e. empty threads)
     dim3 block_dim = args.size;
     dim3 grid_dim(ceil_div(width, block_dim.x), ceil_div(height, block_dim.y));
-    if (args.gridsize_set) 
+    if (args.gridsize_set)
         std::swap(grid_dim, block_dim);
 
     // Dynamic parallelism - prepare child kernel (Doesn't work - no child and parent grid sync)
@@ -109,21 +109,18 @@ int main(int argc, char *argv[]) {
     std::cout << std::left << std::setw(LABEL_WIDTH) << "Block size:" << block_dim.x << " x " << block_dim.y << std::endl;
     // clang-format on
     // use timed wrapped kernel launch
-    float milliseconds = LaunchTimedKernel(ray_trace_kernel,
-                                           grid_dim,
-                                           block_dim,
-                                           0,
-                                           0,
-                                           *d_camera,
-                                           d_objects,
-                                           objects.size(),
-                                           d_lights,
-                                           lights.size(),
-                                           d_materials,
-                                           materials.size(),
-                                           width,
-                                           height,
-                                           d_rgb_image);
+    float ms = TIME_KERNEL(0, {
+        ray_trace_kernel<<<grid_dim, block_dim>>>(*d_camera,
+                                                  d_objects,
+                                                  objects.size(),
+                                                  d_lights,
+                                                  lights.size(),
+                                                  d_materials,
+                                                  materials.size(),
+                                                  width,
+                                                  height,
+                                                  d_rgb_image);
+    });
 
     auto err = cudaGetLastError();
     if (err != cudaSuccess) {
@@ -132,9 +129,9 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     // clang-format off
-    std::cout << std::left << std::setw(LABEL_WIDTH) << "Time:" << milliseconds << " ms (" << milliseconds/1000 << " s)" << std::endl;
-    std::cout << std::left << std::setw(LABEL_WIDTH) << "Throughput:" << width * height / milliseconds / 1000 << " M rays/s" << std::endl;
-    std::cout << std::left << std::setw(LABEL_WIDTH) << "FPS:" << 1000 / milliseconds << " fps" << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "Time:" << ms << " ms (" << ms/1000 << " s)" << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "Throughput:" << width * height / ms / 1000 << " M rays/s" << std::endl;
+    std::cout << std::left << std::setw(LABEL_WIDTH) << "FPS:" << 1000 / ms << " fps" << std::endl;
     std::cout << std::left << std::setw(LABEL_WIDTH) << "Scene size:" << scene_size << " bytes" << std::endl;
     std::cout << std::left << std::setw(LABEL_WIDTH) << "# of objects:" << objects.size() << std::endl;
     std::cout << std::left << std::setw(LABEL_WIDTH) << "# of lights:" << lights.size() << std::endl;
@@ -145,7 +142,7 @@ int main(int argc, char *argv[]) {
 
     std::cout << std::endl << "Writing image to " << args.outputname << std::endl;
 
-    if (ends_with(args.outputname, ".png")) 
+    if (ends_with(args.outputname, ".png"))
         stbi_write_png(args.outputname, width, height, 3, h_rgb_image.data(), width * 3);
     else if (ends_with(args.outputname, ".ppm"))
         write_ppm(args.outputname, h_rgb_image, width, height, 3);
