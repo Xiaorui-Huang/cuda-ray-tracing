@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
     // set by block or grid size
     // To ensure all pixels are processed, we round up the number of blocks (although it reduces occupancy - i.e. empty threads)
     dim3 block_dim = args.size;
-    dim3 grid_dim(ceil(width, block_dim.x), ceil(height, block_dim.y));
+    dim3 grid_dim(ceil_div(width, block_dim.x), ceil_div(height, block_dim.y));
     if (args.gridsize_set) 
         std::swap(grid_dim, block_dim);
 

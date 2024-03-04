@@ -69,7 +69,7 @@ template <typename T> __device__ inline T min(T a, T b) { return a < b ? a : b; 
 
 template <typename T> __device__ inline T max(T a, T b) { return a < b ? b : a; }
 
-template <typename T> __host__ __device__ inline T ceil(T a, T b) { return (a + b - 1) / b; }
+template <typename T> __host__ __device__ inline T ceil_div(T a, T b) { return (a + b - 1) / b; }
 
 __host__ __device__ inline bool is_close(float a, float b, float tolerance = 1e-6f) {
     return fabsf(a - b) <= tolerance;
