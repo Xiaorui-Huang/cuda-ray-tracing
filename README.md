@@ -2,7 +2,7 @@
 
 *Learning about cuda with ray tracing*
 
-Update April 6th 2024: Now that I've taken a **CSC367 Parallel Computing** course, I realize there is a lot to improve here.
+Update April 6th 2024: Now that I've taken a **CSC367 Parallel Computing** course, I realize there is a lot to improve here. Most kernels are not optimized yet and relies on the raw speed of GPU. Optimization on the core kenels will be included in the project.
 
 ***Disclaimer:*** This project is heavily inspired by contents learnt from [UofT Computer Graphics Course](https://github.com/alecjacobson/computer-graphics-csc317), specifically [A2](https://github.com/alecjacobson/computer-graphics-ray-casting), [A3](https://github.com/alecjacobson/computer-graphics-ray-tracing) and [A4](https://github.com/alecjacobson/computer-graphics-bounding-volume-hierarchy).
  It repurposes course assets like JSON config style and `.stl` files for scene and borrows some high level concepts from the course.
