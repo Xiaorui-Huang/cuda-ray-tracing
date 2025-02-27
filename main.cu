@@ -52,8 +52,8 @@ int main(int argc, char *argv[]) {
         auto center = bvh_nodes[root_index].box.center();
         // clang-format off
         std::cout << "[debug info - single .stl]:" << std::endl;
-        std::cout << std::left << std::setw(LABEL_WIDTH) << "BVH root box: (" << box.min.x() << ", " << box.min.y() << ", " << box.min.z() << ") - (" << box.max.x() << ", " << box.max.y() << ", " << box.max.z() << ")" << std::endl;
-        std::cout << std::left << std::setw(LABEL_WIDTH) << "Center of BVH root: (" << center.x() << ", " << center.y() << ", " << center.z() << ")" << std::endl << std::endl;
+        std::cout << std::left << std::setw(LABEL_WIDTH) << "BVH root box: (" << box.min.x << ", " << box.min.y << ", " << box.min.z << ") - (" << box.max.x << ", " << box.max.y << ", " << box.max.z << ")" << std::endl;
+        std::cout << std::left << std::setw(LABEL_WIDTH) << "Center of BVH root: (" << center.x << ", " << center.y << ", " << center.z << ")" << std::endl << std::endl;
         // clang-format on
     }
 

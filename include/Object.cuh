@@ -41,19 +41,19 @@ struct Object {
         float3d max_bounds(INFINITY, INFINITY, INFINITY);
 
         // Check if the normal is parallel to the x-axis
-        if (fabs(plane.normal.x()) > 1.0f - EPS) {
-            min_bounds.x() = plane.point.x() - EPS;
-            max_bounds.x() = plane.point.x() + EPS;
+        if (fabs(plane.normal.x) > 1.0f - EPS) {
+            min_bounds.x = plane.point.x - EPS;
+            max_bounds.x = plane.point.x + EPS;
         }
         // Check if the normal is parallel to the y-axis
-        else if (fabs(plane.normal.y()) > 1.0f - EPS) {
-            min_bounds.y() = plane.point.y() - EPS;
-            max_bounds.y() = plane.point.y() + EPS;
+        else if (fabs(plane.normal.y) > 1.0f - EPS) {
+            min_bounds.y = plane.point.y - EPS;
+            max_bounds.y = plane.point.y + EPS;
         }
         // Check if the normal is parallel to the z-axis
-        else if (fabs(plane.normal.z()) > 1.0f - EPS) {
-            min_bounds.z() = plane.point.z() - EPS;
-            max_bounds.z() = plane.point.z() + EPS;
+        else if (fabs(plane.normal.z) > 1.0f - EPS) {
+            min_bounds.z = plane.point.z - EPS;
+            max_bounds.z = plane.point.z + EPS;
         }
         // Set the bounding box for the plane
         box = AABB(min_bounds, max_bounds);

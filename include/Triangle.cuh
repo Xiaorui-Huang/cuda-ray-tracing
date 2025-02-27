@@ -16,9 +16,9 @@ struct Triangle {
     __host__ __device__ float3d min_corner() const {
         float3d corner = corners[0];
         for (int i = 1; i < 3; i++) {
-            corner.x() = min(corners[i].x(), corner.x());
-            corner.y() = min(corners[i].y(), corner.y());
-            corner.z() = min(corners[i].z(), corner.z());
+            corner.x = min(corners[i].x, corner.x);
+            corner.y = min(corners[i].y, corner.y);
+            corner.z = min(corners[i].z, corner.z);
         }
         return corner;
     }
@@ -26,9 +26,9 @@ struct Triangle {
     __host__ __device__ float3d max_corner() const {
         float3d corner = corners[0];
         for (int i = 1; i < 3; i++) {
-            corner.x() = max(corners[i].x(), corner.x());
-            corner.y() = max(corners[i].y(), corner.y());
-            corner.z() = max(corners[i].z(), corner.z());
+            corner.x = max(corners[i].x, corner.x);
+            corner.y = max(corners[i].y, corner.y);
+            corner.z = max(corners[i].z, corner.z);
         }
         return corner;
     }

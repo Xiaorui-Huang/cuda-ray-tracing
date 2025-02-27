@@ -70,9 +70,9 @@ __global__ void ray_trace_kernel(const Camera &camera,
             auto clamp = [](float x) { return x < 0 ? 0 : x > 1 ? 1 : x; };
 
             // set pixel color to value computed from hit point, light, and n normal image
-            image[row * width * 3 + col * 3 + (int)Color::Red] = clamp(rgb.x()) * 255.0;
-            image[row * width * 3 + col * 3 + (int)Color::Green] = clamp(rgb.y()) * 255.0;
-            image[row * width * 3 + col * 3 + (int)Color::Blue] = clamp(rgb.z()) * 255.0;
+            image[row * width * 3 + col * 3 + (int)Color::Red] = clamp(rgb.x) * 255.0;
+            image[row * width * 3 + col * 3 + (int)Color::Green] = clamp(rgb.y) * 255.0;
+            image[row * width * 3 + col * 3 + (int)Color::Blue] = clamp(rgb.z) * 255.0;
         }
     }
 }
